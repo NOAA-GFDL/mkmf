@@ -1,0 +1,481 @@
+=head1 NAME
+
+mkmf -  Make Makefile
+
+=head1 SYNOPSIS
+
+mkmf [-a <abspath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
+
+=head1 DESCRIPTION
+
+B<mkmf> is a tool written in perl5 that will construct a makefile from
+distributed source. A single executable program is the typical result,
+but I dare say it is extensible to a makefile for any purpose at all.
+
+
+=head2 Features
+
+=over 5
+
+=item *
+
+Understands dependencies in f90 (modules and use), the Fortran include
+statement, and the cpp #include statement in any type of source
+
+=item *
+
+No restrictions on filenames, module names, etc.
+
+=item *
+
+Supports the concept of overlays (where source is maintained in layers
+of directories with a defined precedence)
+
+=item *
+
+Keeps track of changes to cpp flags, and knows when to recompile
+affected source (i.e, files containing #ifdefs that have been changed
+since the last invocation);
+
+=item *
+
+Will run on any unix platform that has perl version 5 installed
+
+=item *
+
+It is free, and released under GPL.
+
+=back
+
+=head2 Pronunciation
+
+B<mkmf> is pronounced make-make-file or make-m-f or even McMuff.
+
+
+=head1 OPTIONS
+
+=over 5
+
+=item B<-a> I<< <abspath> >>
+
+Attach the I<< <abspath> >> at the I<front> of all I<relative> paths
+to source files.  If not specified, the current working directory is
+the I<< <abspath> >>.
+
+=item  B<-c> I<< <cppdefs> >>
+
+I<< <cppdefs> >> is a list of cpp I<#defines> to be passed to the
+source files: affected object files will be selectively removed if
+there has been a change in this state.
+
+=item B<-o> I<< <otherflags> >>
+
+I<< <otherflags> >> is a list of compiler directives to be passed to
+the source files: it is rather similar to I<< <cppdefs> >> except that
+these can be any flags.  Also, by Fortran convention, cpp is only
+invoked on .F and .F90 files. I<< <otherflags> >> apply to all source
+files (.f and .f90 as well).
+
+=item B<-d>
+
+Debug B<mkmf>.  Much more verbose than B<-v>, but probably of use only
+if you are modifying B<mkmf> itself.
+
+=item B<-f>
+
+Restrict lines in the makefile to 256 characters.
+
+=item B<-m> I<< <makefile> >>
+
+The name of the makefile written.  Default: I<Makefile>
+
+=item B<-t> I<< <template> >>
+
+I<< <template> >> is a file containing a list of make macros or
+commands written to the beginning of the makefile.
+
+=item B<-p> I<< <program> >>
+
+I<< <program> >> is the name of the final target (default I<a.out>).
+If I<< <program> >> has the file extension I<.a>, it is understood to
+be a library.  The command to create it is C<$(AR) $(ARFLAGS)> instead
+of I<$(LD) $(LDFLAGS)>.
+
+=item B<-v>
+
+Be verbose.
+
+=item B<-x>
+
+Execute the makefile immediately.
+
+=item I<< <args> >>
+
+A list of directories and files to be searched for targets and
+dependencies.
+
+=back
+
+=head1 NOTES
+
+=head2 Makefile structure
+
+A I<sourcefile> is any file with a source file suffix (currently .F,
+.F90, .f., .f90, .c, .C, .cc, .cp, .cxx, c++). An I<includefile> is
+any file with an include file suffix (currently .H, .fh, .h, .h90,
+.inc).  A valid I<sourcefile> can also be an I<includefile>.
+
+Each I<sourcefile> in the list is presumed to produce an object file
+with the same I<basename> and a F<.o> extension in the current working
+directory.  If more than one I<sourcefile> in the list would produce
+identically-named object files, only the first is used and the rest
+are discarded.  This permits the use of overlays: if F<dir3> contained
+the basic source code, F<dir2> contained bug fixes, and F<dir1>
+contained mods for a particular build, C<mkmf dir1 dir2 dir3> would
+create a makefile for correct compilation.  Please note that
+precedence I<descends> from left to right.  This is the conventional
+order used by compilers when searching for libraries, includes, etc:
+left to right along the command line, with the first match
+invalidating all subsequent ones. See the L</Examples> section for a
+closer look at precedence rules.
+
+The makefile currently runs C<$(FC)> on Fortran files, C<$(CC)> on C
+files, and C<$(CXX)> on C++ files.  Flags to the compiler can be set
+in C<$(FFLAGS)> or C<$(CFLAGS)>.  The final loader step executes
+C<$(LD)>.  Flags to the loader can be set in C<$(LDFLAGS)>.  Libraries
+are archived using C<$(AR)>, with flags set in C<$(ARFLAGS)>.
+Preprocessor flags are used by .F, .F90 and .c files, and can be set
+in C<$(CPPFLAGS)>.  These macros have a default meaning on most
+systems, and can be modified in the template file. The predefined
+macros can be discovered by running C<make -p>.
+
+In addition, the macro C<$(CPPDEFS)> is applied to the preprocessor.
+This can contain the cpp C<#defines> which may change from run to run.
+cpp options that do not change between compilations should be placed
+in C<$(CPPFLAGS)>.
+
+Includefiles are recursively searched for embedded includes.
+
+For emacs users, the make target F<TAGS> is always provided.  This
+creates a F<TAGS> file in the current working directory with a
+cross-reference table linking all the sourcefiles.  If you don't know
+about emacs tags, please consult the emacs help files!  It is an
+incredibly useful feature.
+
+The default action for non-existent files is to C<touch> them (i.e
+create null files of that name) in the current working directory.
+
+All the object files are linked to a single executable.  It is
+therefore desirable that there be a single main program source among
+the arguments to B<mkmf>, otherwise, the loader is likely to complain.
+
+=head2 Treatment of <args>
+
+The argument list B<args> is treated sequentially from left to right.
+Arguments can be of three kinds:
+
+=over 3
+
+=item 1.
+
+If an argument is a sourcefile, it is added to the list of
+sourcefiles.
+
+=item 2.
+
+If an argument is a directory, all the sourcefiles in that directory
+are added to the list of sourcefiles.
+
+=item 3.
+
+If an argument is a regular file, it is presumed to contain a list of
+sourcefiles.  Any line not containing a sourcefile is discarded.  If
+the line contains more than one word, the last word on the line should
+be the sourcefile name, and the rest of the line is a file-specific
+compilatio command.  This may be used, for instance, to provide
+compiler flags specific to a single file in the sourcefile list:
+
+=over 3
+
+	a.f90
+	b.f90
+	f90 -Oaggress c.f90
+
+=back
+
+This will add `a.f90`, `b.f90` and `c.f90` to the sourcefile list. The
+first two files will be compiled using the generic command `$(FC)
+$(FFLAGS)`.  But when the make requires `c.f90` to be compiled, it
+will be compiled with f90 -Oaggress.
+
+=back
+
+The directory I<abspath> (specified by B<-a> I<< <abspath> >>), or the
+current working directory, is always the first (and top-precedence)
+argument, even if I<< <args> >> is not supplied.
+
+=head2 Treatment of [-c cppdefs]
+
+The argument B<cppdefs> is treated as follows.  B<cppdefsB> should
+contain a comprehensive list of the cpp C<#defines> to be
+preprocessed.  This list is compared against the current "state",
+maintained in the file F<.cppdefs> in the current working directory.
+If there are any changes to this state, B<mkmf> will remove all object
+files affected by this change, so that the subsequent make will
+recompile those files.
+
+The file F<.cppdefs> is created if it does not exist.  If you wish to
+edit it by hand (don't!) it merely contains a list of the cpp flags
+separated by blanks, in a single record, with no newline at the end.
+
+I<< <cppdefs> >> also sets the make macro C<CPPDEFS>.  If this was set
+in a template file and also in the B<-c> flag to B<mkmf>, the value in
+B<-c> takes precedence.  Typically, you should set only C<CPPFLAGS> in
+the template file, and C<CPPDEFS> via B<mkmf -c>.
+
+=head2 Treatment of includefiles
+
+Include files are often specified without an explicit path, e.g
+
+     #include "config.h"
+
+or:
+
+     #include <config.h>
+
+By convention, the first form will take a file of that name found in
+the I<same> directory as the source, before looking at include
+directories specified by -I. The second form ignores the local
+directory and only uses -I.
+
+B<mkmf> does not currently distinguish between the two forms of
+include.  It first attempts to locate the includefile in the same
+directory as the source file.  If it is not found there, it looks in
+the directories listed as arguments, maintaining the same
+left-to-right precedence as described above.
+
+This follows the behaviour of most f90 compilers: includefiles inherit
+the path to the source, or else follow the order of include
+directories specified from left to right on the f90 command line, with
+the -I flags descending in precedence from left to right.  It's
+possible there are compilers that violate the rule.  If you come
+across any, please bring that to my attention.
+
+If you have includefiles in a directory F<dir> other than those listed
+above, you can specify it yourself by including C<-Idir> in
+C<$(FFLAGS)> in your template file.  Includepaths in the template file
+take precedence over those generated by B<mkmf>.  (I suggest using
+C<FFLAGS> for this rather than C<CPPFLAGS> because Fortran includes
+can occur even in source requiring no preprocessing).
+
+=head2 Examples
+
+The template file using the Intel compilers:
+
+     CC = icc
+     FC = ifort
+     CXX = icpc
+     LD = ifort
+
+     CPPFLAGS = -O2 -sox
+     CFLAGS = -O2 -sox
+     FFLAGS = -i4 -i8 -sox -O2
+     LDFLAGS = $(LIBS)
+     LIST = -listing
+
+
+The meaning of the various flags may be divined by reading the
+manual. A line defining the make macro LIBS, e.g:
+
+     LIBS = -lmpi
+
+may be added anywhere in the template to have it added to the link
+command line.
+
+This example illustrates the effective use of B<mkmf>'s precedence
+rules.  Let the current working directory contain a file named
+F<path_names> containing the lines:
+
+     updates/a.f90
+     updates/b.f90
+
+The directory F</home/src/base> contains the files:
+
+     a.f90
+     b.f90
+     c.f90
+
+Typing
+
+     mkmf path_names /home/src/base
+
+produces the following Makefile:
+
+     # Makefile created by mkmf
+
+
+     .DEFAULT:
+	   -touch $@
+     all: a.out
+     c.o: /home/src/base/c.f90
+	   $(FC) $(FFLAGS) -c	/home/src/base/c.f90
+     a.o: updates/a.f90
+	   $(FC) $(FFLAGS) -c	updates/a.f90
+     b.o: updates/b.f90
+	   $(FC) $(FFLAGS) -c	updates/b.f90
+     ./c.f90: /home/src/base/c.f90
+	   cp /home/src/base/c.f90 .
+     ./a.f90: updates/a.f90
+	   cp updates/a.f90 .
+     ./b.f90: updates/b.f90
+	   cp updates/b.f90 .
+     SRC = /home/src/base/c.f90 updates/a.f90 updates/b.f90
+     OBJ = c.o a.o b.o
+     OFF = /home/src/base/c.f90 updates/a.f90 updates/b.f90
+     clean: neat
+	   -rm -f .cppdefs $(OBJ) a.out
+     neat:
+	   -rm -f $(TMPFILES)
+     localize: $(OFF)
+	   cp $(OFF) .
+     TAGS: $(SRC)
+	   etags $(SRC)
+     tags: $(SRC)
+	   ctags $(SRC)
+     a.out: $(OBJ)
+	   $(LD) $(OBJ) -o a.out $(LDFLAGS)
+
+
+Note that when files of the same name recur in the target list, the
+files in the updates directory (specified in F<path_names>) are used
+rather than those in the base source repository F</home/src/base>.
+
+Assume that now you want to test some changes to F<c.f90>. You don't
+want to make changes to the base source repository itself prior to
+testing; so you make yourself a local copy.
+
+     make ./c.f90
+
+You didn't even need to know where F<c.f90> originally was.
+
+Now you can make changes to your local copy F<./c.f90>. To compile
+using your changed copy, type:
+
+     mkmf path_names /home/src/base
+     make
+
+The new Makefile looks like this:
+
+     # Makefile created by mkmf
+
+
+     .DEFAULT:
+	   -touch $@
+     all: a.out
+     c.o: c.f90
+	   $(FC) $(FFLAGS) -c	c.f90
+     a.o: updates/a.f90
+	   $(FC) $(FFLAGS) -c	updates/a.f90
+     b.o: updates/b.f90
+	   $(FC) $(FFLAGS) -c	updates/b.f90
+     ./a.f90: updates/a.f90
+	   cp updates/a.f90 .
+     ./b.f90: updates/b.f90
+	   cp updates/b.f90 .
+     SRC = c.f90 updates/a.f90 updates/b.f90
+     OBJ = c.o a.o b.o
+     OFF = updates/a.f90 updates/b.f90
+     clean: neat
+	   -rm -f .cppdefs $(OBJ) a.out
+     neat:
+	   -rm -f $(TMPFILES)
+     localize: $(OFF)
+	   cp $(OFF) .
+     TAGS: $(SRC)
+	   etags $(SRC)
+     tags: $(SRC)
+	   ctags $(SRC)
+     a.out: $(OBJ)
+	   $(LD) $(OBJ) -o a.out $(LDFLAGS)
+
+
+Note that you are now using your local copy of F<c.f90> for the
+compile, since the files in the current working directory always take
+precedence.  To revert to using the base copy, just remove the local
+copy and run B<mkmf> again.
+
+This illustrates the use of mkmf -c:
+
+     mkmf -c "-Dcppflag -Dcppflag2=2 -Dflag3=string ..."
+
+will set C<CPPDEFS> to this value, and also save this state in the
+file F<.cppdefs>.  If the argument to B<-c> is changed in a subsequent
+call:
+
+     mkmf -c "-Dcppflag -Dcppflag2=3 -Dflag3=string ..."
+
+B<mkmf> will scan the source list for sourcefiles that make references
+to C<cppflag2>, and the corresponding object files will be removed.
+
+=head2 Caveats
+
+In F90, the module name must occur on the same source line as the
+module or use keyword. That is to say, if your code contained:
+
+     use &
+	this_module
+
+it would confuse B<mkmf>. Similarly, a Fortran include statement must
+not be split across lines.
+
+Two use statements on the same line is not currently recognized, that
+is:
+
+     use module1; use module2
+
+is to be avoided.
+
+Currently the default action for files listed as dependencies but not
+found: in this case, I touch the file, creating a null file of that
+name in the current directory.  This may not be the correct method,
+but it is currently the least annoying way to take care of a situation
+when cpp C<#includes> buried within obsolete C<#ifdefs> ask for files
+that don't exist:
+
+     #ifdef obsolete
+     #include "nonexistent.h"
+     #endif
+
+
+If the formatting flag B<-f> is used, long lines will be broken up at
+intervals of 256 characters. This can lead to problems if individual
+paths are longer than 256 characters.
+
+=head1 BUGS
+
+Please report issues on the project's github page
+https://github.com/NOAA-GFDL/mkmf
+
+=head1 AUTHORS
+
+Designed and written by
+V. Balaji.
+
+=head1 COPYRIGHT
+
+Copyright 1999-2013 V. Balaji
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see L<http://www.gnu.org/licenses/>.
+
+=cut

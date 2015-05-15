@@ -1,0 +1,68 @@
+git-version-string(1)
+=====================
+
+NAME
+----
+git-version-string - Prints the git status of a file
+
+SYNOPSIS
+--------
+[verse]
+git version-string [<options>...] <file>
+
+DESCRIPTION
+-----------
+
+*git-version-string* reports on the git status of a file.  The string
+returned can be used in a CPP macro to set the file's version in the
+compiled source code, as in the following compile example:
+
+ f90 -D_VERSION=`git version-string foo.F90` -c foo.F90
+
+or in a Makefile:
+
+ foo.o : foo.F90
+      $(F90) -D_VERSION=$(shell git version-string foo.F90) -c foo.F90
+
+OPTIONS
+-------
+*-h* ::
+Print the usage message
+
+OUTPUT
+------
+
+*git-version-string* will always print a string indicating the "known"
+status of a file to standard out.  The possible status lines are:
+
+. An unmodified file will only have the commit hash printed.
+
+  Example: ref:f6a0f81
+
+. A modified file will have the commit hash printed, a status string,
+  and the modified object hash.
+
+  Example: ref:f6a0f81 status:Modified blob:e50efe074c09a81d9041222a9976b4ef87758265
+
+. If the file is not in a git repository, or if any error occurs, the
+  string returned will be "UNKNOWN".  If possible, the hash of the
+  blob will also be printed.
+
+  Example: status:UNKNOWN
+	   status:UNKNOWN blob:d86bac9de59abcc26bc7956c1e842237c7581859
+
+If *git-version-string* encounters any errors, the status line in 3
+will still be printed, along with an error message to stdout, and in
+some cases will have a non-zero exit status.
+
+To use with mkmf, use the following invocation:
+
+mkmf -t make_template -p foo -c '-D_VERSION="`git version-string $<`"' path_names
+
+That will add the following CPPDEFS make macro to the makefile:
+
+CPPDEFS = -d_VERSION="`git version-string $<`"
+
+AUTHOR
+------
+Written by Seth Underwood <Seth.Underwood@noaa.gov>
