@@ -50,6 +50,6 @@ Kushner's suggestion).
 Installation
 ------------
 
-*mkmf* and *list_paths* can be run on any \*nix type system that has the C-shell ([tcsh](http://www.tcsh.org/)) and Perl version 5 installed.
+*mkmf* and *list_paths* can be run on any \*nix type system that has C-shell ([tcsh](http://www.tcsh.org/)) and Perl version 5 installed.
 
-To install, place the repository on the file system, an then add the bin directory to PATH.
+To install, place the repository on the file system and add the bin directory to PATH.
