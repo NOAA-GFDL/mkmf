@@ -25,7 +25,7 @@ FFLAGS += $(shell nc-config --fflags)
 FFLAGS += -I/usr/include/mpich2-x86_64
 FFLAGS_OPT = -O2
 FFLAGS_REPRO =
-FFLAGS_DEBUG = -O0 -g -W -fbounds-check
+FFLAGS_DEBUG = -O0 -g -W -fbounds-check -ffpe-trap=invalid,zero,overflow
 FFLAGS_OPENMP = -fopenmp
 FFLAGS_VERBOSE =
 

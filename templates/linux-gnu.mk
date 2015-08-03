@@ -26,7 +26,7 @@ FFLAGS += -I$(shell nc-config --includedir)
 FFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 FFLAGS_OPT = -O3
 FFLAGS_REPRO = -O2 -fbounds-check
-FFLAGS_DEBUG = -O0 -g -W -fbounds-check -fbacktrace
+FFLAGS_DEBUG = -O0 -g -W -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow
 FFLAGS_OPENMP = -fopenmp
 FFLAGS_VERBOSE =
 
