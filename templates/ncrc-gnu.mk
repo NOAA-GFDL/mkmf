@@ -22,7 +22,7 @@ FPPFLAGS :=
 FFLAGS := -fcray-pointer -fdefault-real-8 -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check
 FFLAGS_OPT = -O2 -fno-expensive-optimizations
 FFLAGS_REPRO =
-FFLAGS_DEBUG = -O0 -g -W -fbounds-check
+FFLAGS_DEBUG = -O0 -g -W -fbounds-check -ffpe-trap=invalid,zero,overflow
 FFLAGS_OPENMP = -fopenmp
 FFLAGS_VERBOSE =
 
