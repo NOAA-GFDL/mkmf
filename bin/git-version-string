@@ -48,52 +48,56 @@
 # **********************************************************************
 
 usage () {
-    echo "usage: $( basename $0 ) <file>" 1>&2
+    printf "usage: %s <file>\n" $( basename $0 )  1>&2
     exit $1
 }
 
 error () {
-    echo -n "'status:UNKNOWN"
-    if [[ $# -eq 3 ]]; then
-	echo " blob:$3'"
+    err_msg=$1
+    exit_val=$2
+    if [ $# -eq 3 ]; then
+        blob_hash=" blob:$3"
     else
-	echo "'"
+        blob_hash=""
     fi
+    # $blob_hash will contain the leading space (if needed)
+    # quoting $blob_hash will preserve the leading space.
+    printf "'status:UNKNOWN%s'\n" "$blob_hash"
 
-    echo $1 1>&2
-    exit $2
+    printf "$err_msg\n" 1>&2
+    exit $exit_val
 }
 
 git_status () {
-    if [[ $1 == '??' ]]; then
-	echo "Untracked"
-    elif [[ $1 == 'A' ]]; then
-	echo "Added"
-    elif [[ $1 == 'M' ]]; then
-	echo "Modified"
-    elif [[ $1 == 'D' ]]; then
-	echo "Deleted"
-    elif [[ $1 == 'R' ]]; then
-	echo "Renamed"
-    elif [[ $1 == 'C' ]]; then
-	echo "Copied"
-    elif [[ $1 == 'U' ]]; then
-	echo "Unmerged"
+    if [ $1 = '??' ]; then
+        printf "Untracked"
+    elif [ $1 = 'A' ]; then
+        printf "Added"
+    elif [ $1 = 'M' ]; then
+        printf "Modified"
+    elif [ $1 = 'D' ]; then
+        printf "Deleted"
+    elif [ $1 = 'R' ]; then
+        printf "Renamed"
+    elif [ $1 = 'C' ]; then
+        printf "Copied"
+    elif [ $1 = 'U' ]; then
+        printf "Unmerged"
     else
-	echo "UNKNOWN"
+        printf "UNKNOWN"
     fi
 }
 
 status () {
-    if [[ $# -ne 3 ]]; then
+    if [ $# -ne 3 ]; then
 	error "DEBUG: bad call to status" 1
     fi
 
-    if [[ ${#2} -eq 0 ]]; then
-	echo "'ref:$1'"
+    if [ ${#2} -eq 0 ]; then
+        printf "'ref:%s'\n" $1
     else
-	stat=$( git_status $2 )
-	echo "'ref:$1 status:$stat blob:$3'"
+        stat=$( git_status $2 )
+        printf "'ref:%s status:%s blob:%s'\n" $1 $stat $3
     fi
 }
 
@@ -101,62 +105,62 @@ status () {
 # Parse opions
 while getopts "h" opt; do
     case "$opt" in
-	h)
-	    usage 0
-	    ;;
+        h)
+            usage 0
+            ;;
     esac
 done
 shift $((OPTIND-1))
 
 # Verify git is in the path
 git=$( which git 2>&1 )
-if [[ $? -ne 0 ]]; then
+if [ $? -ne 0 ]; then
     error "FATAL: git is not in PATH" 1
 fi
 
-if [[ $# == 1 ]]; then
+if [ $# -eq 1 ]; then
     dir=$( dirname $1 )
     file=$( basename $1 )
 
     # Change into dir.
-    if [[ -e $dir ]]; then
-	if [[ -d $dir ]]; then
-	    cd $dir
-	else
-	    error "FATAL: $dir is not a directory" 1
-	fi
+    if [ -e $dir ]; then
+        if [ -d $dir ]; then
+            cd $dir
+        else
+            error "FATAL: $dir is not a directory" 1
+        fi
     else
-	error "FATAL: Directory $dir does not exist" 1
+        error "FATAL: Directory $dir does not exist" 1
     fi
 
     # Check if file exists
-    if [[ ! -e $file ]]; then
-	error "FATAL: File $file does not exist" 1
-    elif [[ ! -r $file ]]; then
-	error "FATAL: File $file is not readable" 1
+    if [ ! -e $file ]; then
+        error "FATAL: File $file does not exist" 1
+    elif [ ! -r $file ]; then
+        error "FATAL: File $file is not readable" 1
     fi
 
     # File exists, can get the blob hash
     fileHash=$( git hash-object $file 2> /dev/null )
     errorStat=$?
-    if [[ $errorStat -ne 0 ]]; then
-	error "WARNING: Failed to get hash of $file" 0
+    if [ $errorStat -ne 0 ]; then
+        error "WARNING: Failed to get hash of $file" 0
     fi
 
     # Trap error if not in a git work directory
     repoHash=$( git rev-parse HEAD 2> /dev/null)
     errorStat=$?
-    if [[ $errorStat -eq 128 ]]; then
-	# Not in a git repository
-	error "WARNING: Not in a git repository" 0
-    elif [[ $errorStat -ne 0 ]]; then
-	error "WARNING: Unknown 'git rev-parse' error $?" 0
+    if [ $errorStat -eq 128 ]; then
+        # Not in a git repository
+        error "WARNING: Not in a git repository" 0 $fileHash
+    elif [ $errorStat -ne 0 ]; then
+        error "WARNING: Unknown 'git rev-parse' error $?" 0
     fi
 
     fileStatus=$( git status --porcelain $file | awk '{print $1}' )
     errorStat=$?
-    if [[ $errorStat -ne 0 ]]; then
-	error "WARNING: Unable to get status of $file" 0 $fileHash
+    if [ $errorStat -ne 0 ]; then
+        error "WARNING: Unable to get status of $file" 0 $fileHash
     fi
 
     status "$repoHash" "$fileStatus" "$fileHash"

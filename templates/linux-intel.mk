@@ -22,7 +22,7 @@ FPPFLAGS := -fpp -Wp,-w
 
 FFLAGS := -fno-alias -stack_temps -safe_cray_ptr -ftz -i_dynamic -assume byterecl -i4 -r8 -nowarn -g -sox -traceback
 FFLAGS_OPT = -O2
-FFLAGS_REPRO = -fltconsistency
+FFLAGS_REPRO = -fpmodel source -O2
 FFLAGS_DEBUG = -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -debug variable_locations -fpe0 -ftrapuv
 FFLAGS_OPENMP = -openmp
 FFLAGS_VERBOSE = -v -V -what
@@ -45,8 +45,7 @@ LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 ifneq ($(REPRO),)
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
-endif
-ifneq ($(DEBUG),)
+else ifneq ($(DEBUG),)
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
 else ifneq ($(TEST),)

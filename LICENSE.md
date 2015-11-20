@@ -4,7 +4,7 @@ Princeton University who originally provided this software under
 version 3 of the Gnu General Public License, which is provided below.
 
 The intent of this license is to ensure free and unrestricted access to the
-iceberg software, and to pass on those rights to modified versions this
+mkmf software, and to pass on those rights to modified versions this
 software.
 
 
