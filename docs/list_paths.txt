@@ -1,0 +1,63 @@
+list_paths(1)
+============
+
+NAME
+----
+
+list_paths - Scan a directory tree for source files
+
+SYNOPSIS
+--------
+
+[verse]
+list_paths [OPTIONS] <dir> [<dir> ...]
+
+DESCRIPTION
+-----------
+
+*list_paths* will scan a directory tree for source files (files with
+names of \*.{c,C,f,F,fh,f90,F90,h,H,inc}) and documentation files
+(files with names of \*.{html,ps,txt}, README and readme).  The source
+list output file can be passed to the Makefile creation utility *mkmf*
+to assist in creating a Makefile to be used with *make*.
+
+OPTIONS
+-------
+
+*-o* _<OUTPUT_FILE>_::
+_<OUTPUT_FILE>_ will have a list of all source files (files with a
+name of \*.{c,C,f,F,fh,f90,F90,h,H,inc}).  and _<OUTPUT_FILE>.html_
+will have a list of documentation fils (files with a name of
+\*.{html,ps,txt}, README or readme)
+
+SEE ALSO
+--------
+
+*mkmf*(1), *make*(1)
+
+BUGS
+----
+
+Send bug reports to GFDL's Helpdesk <oar.gfdl.help@noaa.gov>.
+
+AUTHORS
+-------
+
+Designed and written by
+V. Balaji.
+
+COPYRIGHT AND LICENSE
+---------------------
+
+Copyright 2000-2007 Geophysical Fluid Dynamics Laboratory
+
+The Flexible Modeling System (FMS) is free software; you can
+redistribute it and/or modify it and are expected to follow the terms
+of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any
+later version.
+
+FMS is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.

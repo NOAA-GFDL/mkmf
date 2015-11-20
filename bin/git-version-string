@@ -1,0 +1,165 @@
+#!/bin/sh
+#
+# **********************************************************************
+#
+# Author: Seth Underwood <Seth.Underwood@noaa.gov>
+#
+# **********************************************************************
+#
+# git-version-string reports on the git status of a file.  The string
+# returned can be used in a CPP macro to set the file's version in the
+# compiled source code, as in the following compile example:
+#
+# f90 -D_VERSION=`git version-string foo.F90` -c foo.F90
+#
+# or in a Makefile:
+#
+# foo.o : foo.F90
+#      $(F90) -D_VERSION=$(shell git version-string foo.F90) -c foo.F90
+#
+# git-version-string will always print a string indicating the "known"
+# status of a file to standard out.  The possible status lines are:
+#
+# 1. An unmodified file will only have the commit hash printed.
+#    Example: ref:f6a0f81
+#
+# 2. A modified file will have the commit hash printed, a status string,
+#    and the modified object hash.
+#    Example: ref:f6a0f81 status:Modified blob:e50efe074c09a81d9041222a9976b4ef87758265
+#
+# 3. If the file is not in a git repository, or if any error occurs, the
+#    string returned will be "UNKNOWN".  If possible, the hash of the
+#    blob will also be printed.
+#    Example: status:UNKNOWN
+#             status:UNKNOWN blob:d86bac9de59abcc26bc7956c1e842237c7581859
+#
+# If git-version-string encounters any errors, the status line in 3
+# will still be printed, along with an error message to stdout, and in
+# some cases will have a non-zero exit status.
+#
+# To use with mkmf, use the following invocation:
+#
+# mkmf -t make_template -p foo -c '-D_VERSION="`git version-string $<`"' path_names
+#
+# That will add the following CPPDEFS make macro to the makefile:
+#
+# CPPDEFS = -d_VERSION="`git version-string $<`"
+#
+# **********************************************************************
+
+usage () {
+    echo "usage: $( basename $0 ) <file>" 1>&2
+    exit $1
+}
+
+error () {
+    echo -n "'status:UNKNOWN"
+    if [[ $# -eq 3 ]]; then
+	echo " blob:$3'"
+    else
+	echo "'"
+    fi
+
+    echo $1 1>&2
+    exit $2
+}
+
+git_status () {
+    if [[ $1 == '??' ]]; then
+	echo "Untracked"
+    elif [[ $1 == 'A' ]]; then
+	echo "Added"
+    elif [[ $1 == 'M' ]]; then
+	echo "Modified"
+    elif [[ $1 == 'D' ]]; then
+	echo "Deleted"
+    elif [[ $1 == 'R' ]]; then
+	echo "Renamed"
+    elif [[ $1 == 'C' ]]; then
+	echo "Copied"
+    elif [[ $1 == 'U' ]]; then
+	echo "Unmerged"
+    else
+	echo "UNKNOWN"
+    fi
+}
+
+status () {
+    if [[ $# -ne 3 ]]; then
+	error "DEBUG: bad call to status" 1
+    fi
+
+    if [[ ${#2} -eq 0 ]]; then
+	echo "'ref:$1'"
+    else
+	stat=$( git_status $2 )
+	echo "'ref:$1 status:$stat blob:$3'"
+    fi
+}
+
+
+# Parse opions
+while getopts "h" opt; do
+    case "$opt" in
+	h)
+	    usage 0
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+# Verify git is in the path
+git=$( which git 2>&1 )
+if [[ $? -ne 0 ]]; then
+    error "FATAL: git is not in PATH" 1
+fi
+
+if [[ $# == 1 ]]; then
+    dir=$( dirname $1 )
+    file=$( basename $1 )
+
+    # Change into dir.
+    if [[ -e $dir ]]; then
+	if [[ -d $dir ]]; then
+	    cd $dir
+	else
+	    error "FATAL: $dir is not a directory" 1
+	fi
+    else
+	error "FATAL: Directory $dir does not exist" 1
+    fi
+
+    # Check if file exists
+    if [[ ! -e $file ]]; then
+	error "FATAL: File $file does not exist" 1
+    elif [[ ! -r $file ]]; then
+	error "FATAL: File $file is not readable" 1
+    fi
+
+    # File exists, can get the blob hash
+    fileHash=$( git hash-object $file 2> /dev/null )
+    errorStat=$?
+    if [[ $errorStat -ne 0 ]]; then
+	error "WARNING: Failed to get hash of $file" 0
+    fi
+
+    # Trap error if not in a git work directory
+    repoHash=$( git rev-parse HEAD 2> /dev/null)
+    errorStat=$?
+    if [[ $errorStat -eq 128 ]]; then
+	# Not in a git repository
+	error "WARNING: Not in a git repository" 0
+    elif [[ $errorStat -ne 0 ]]; then
+	error "WARNING: Unknown 'git rev-parse' error $?" 0
+    fi
+
+    fileStatus=$( git status --porcelain $file | awk '{print $1}' )
+    errorStat=$?
+    if [[ $errorStat -ne 0 ]]; then
+	error "WARNING: Unable to get status of $file" 0 $fileHash
+    fi
+
+    status "$repoHash" "$fileStatus" "$fileHash"
+else
+    usage 1
+fi
