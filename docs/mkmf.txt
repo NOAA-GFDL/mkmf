@@ -8,7 +8,7 @@ mkmf - Make Makefile
 SYNOPSIS
 --------
 
-mkmf [-a <abspath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
+mkmf [-a <abspath>] [-b <bldpath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-g] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
 
 DESCRIPTION
 -----------
@@ -52,6 +52,10 @@ Attach the _<abspath>_ at the _front_ of all _relative_ paths to
 source files.  If not specified, the current working directory is the
 _<abspath>_.
 
+*-b* _<bldpath>_::
+Adds a make macro _BUILDROOT_ set to _<bldpath>_, and replaces the
+_<bldpath>_ with _$(BUILDROOT)_ in all source and include paths.
+
 *-c* _<cppdefs>_::
 _<cppdefs>_ is a list of cpp _#defines_ to be passed to the source
 files: affected object files will be selectively removed if there has
@@ -70,6 +74,10 @@ if you are modifying *mkmf* itself.
 
 *-f*::
 Restrict lines in the makefile to 256 characters.
+
+*-g*::
+Include -D_FILE_VERSION="`git-version-string $<`" in the compile
+command line.
 
 *-m* _<makefile>_::
 The name of the makefile written.  Default: _Makefile_

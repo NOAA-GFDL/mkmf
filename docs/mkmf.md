@@ -35,13 +35,16 @@ User guide
 
 ### Syntax
 
-mkmf [-a abspath] [-c cppdefs] [-o otherflags] [-d] [-f] [-m makefile] [-p program] [-t template] [-v] [-x] [args]
+mkmf [-a abspath] [-b bldpath] [-c cppdefs] [-o otherflags] [-d] [-f] [-g] [-m makefile] [-p program] [-t template] [-v] [-x] [args]
 
 ### Options
 
 * __-a abspath__ attaches the __abspath__ at the _front_ of all
   _relative_ paths to source files.  If __-a__ is not specified, the
   current working directory is the __abspath__.
+* __-b bldpath__ Adds a make macro __BUILDROOT__ set to __bldpath__,
+  and replaces the __bldpath__ with __$(BUILDROOT)__ in all source and
+  include paths.
 * __-c cppdefs__ is a list of __cpp #defines__ to be passed to the
   source files: affected object files will be selectively removed if
   there has been a change in this state.
@@ -54,6 +57,8 @@ mkmf [-a abspath] [-c cppdefs] [-o otherflags] [-d] [-f] [-m makefile] [-p progr
   but probably of use only if you are modifying __mkmf__ itself).
 * __-f__ is a formatting flag to restrict lines in the makefile to 256
   characters.
+* __-g__ Include ``-D_FILE_VERSION="`git-version-string $<`"`` in the
+  compile command line.
 * __-m makefile__ is the name of the makefile written (default
   _Makefile_)
 * __-t template__ is a file containing a list of make macros or
