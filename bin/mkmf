@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+#
 #-----------------------------------------------------------------------
 #              mkmf: Perl script for makefile construction
 #
@@ -6,7 +7,7 @@
 #         Princeton University/GFDL
 #
 # Full web documentation for mkmf:
-#     http://www.gfdl.noaa.gov/~vb/mkmf.html
+#     https://github.com/NOAA-GFDL/mkmf
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +30,7 @@ use strict;
 use File::Basename;
 use Getopt::Long qw(:config posix_default bundling no_ignore_case);
 use Config;			# use to put in platform-specific stuff
-use vars qw( $opt_a $opt_c $opt_d $opt_f $opt_I $opt_l $opt_m $opt_o $opt_p $opt_t $opt_v $opt_x ); # declare these global to be shared with Getopt:Std
+use vars qw( $opt_a $opt_c $opt_d $opt_f $opt_g $opt_I $opt_l $opt_m $opt_o $opt_p $opt_t $opt_v $opt_x ); # declare these global to be shared with Getopt:Std
 
 #subroutines
 sub ensureTrailingSlash {
@@ -37,13 +38,14 @@ sub ensureTrailingSlash {
    local $/ = '/'; chomp @_[0]; @_[0] .= '/';
 }
 
-my $version = '$Id: mkmf,v 18.0.18.4.2.1.2.3 2013/08/21 15:04:06 Seth.Underwood Exp $ ';
+my $version = '19.1.0';
 
 # initialize variables: use getopts for these
 GetOptions("abspath|a=s" => \$opt_a,
 	   "cppdefs|c=s" => \$opt_c,
 	   "debug|d" => \$opt_d,
 	   "f" => \$opt_f,
+	   "git|g" => \$opt_g,
 	   "includes|I=s@" => \$opt_I,
 	   "makefile|m=s" => \$opt_m,
 	   "otherflags|o=s" => \$opt_o,
@@ -51,7 +53,7 @@ GetOptions("abspath|a=s" => \$opt_a,
 	   "template|t=s" => \$opt_t,
 	   "verbose|v=s" => \$opt_v,
 	   "execute|x" => \$opt_x,
-	  ) or die "\aSyntax: $0 [-a abspath] [-c cppdefs] [-d] [-f] [-I includes] [-m makefile] [-o otherflags] ][-p program] [-t template] [-v] [-x] [targets]\n";
+	  ) or die "\aSyntax: $0 [-a abspath] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] ][-p program] [-t template] [-v] [-x] [targets]\n";
 $opt_v = 1 if $opt_d;	# debug flag turns on verbose flag also
 print "$0 $version\n" if $opt_v;
 
@@ -125,8 +127,12 @@ if ( $opt_c ) {
       $compile_cmd{'.F'}   = q/$(FC) $(CPPDEFS_XLF) $(FFLAGS) -c/;
       $compile_cmd{'.F90'} = q/$(FC) $(CPPDEFS_XLF) $(FFLAGS) -c/;
    }
-   &print_formatted_list("CPPDEFS = $opt_c") if $opt_c;
 }
+if ( $opt_g ) {
+  $opt_c .= ' -D_FILE_VERSION="`git-version-string $<`"';
+}
+&print_formatted_list("CPPDEFS = $opt_c") if $opt_c;
+
 print MAKEFILE "\nOTHERFLAGS = $opt_o" if $opt_o;
 #vb 2009-12-17, include now comes after vardefs, so that it can modify make variables
 print MAKEFILE "\n\ninclude $opt_t\n\n" if $opt_t; #include template if supplied
