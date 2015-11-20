@@ -4,7 +4,7 @@ mkmf -  Make Makefile
 
 =head1 SYNOPSIS
 
-mkmf [-a <abspath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
+mkmf [-a <abspath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-g] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
 
 =head1 DESCRIPTION
 
@@ -85,6 +85,11 @@ if you are modifying B<mkmf> itself.
 =item B<-f> 
 
 Restrict lines in the makefile to 256 characters.
+
+=item B<-g>
+
+Include -D_FILE_VERSION="`git-version-string $<`" in the compile
+command line.
 
 =item B<-m> I<< <makefile> >>
 

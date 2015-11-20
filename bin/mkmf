@@ -7,7 +7,7 @@
 #         Princeton University/GFDL
 #
 # Full web documentation for mkmf:
-#     http://www.gfdl.noaa.gov/~vb/mkmf.html
+#     https://github.com/NOAA-GFDL/mkmf
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ require 5;
 use strict;
 use File::Basename;
 use Getopt::Long qw(:config posix_default bundling no_ignore_case);
-use Config;			# use to put in platform-specific stuff
-use vars qw( $opt_a $opt_b $opt_c $opt_d $opt_f $opt_I $opt_l $opt_m $opt_o $opt_p $opt_t $opt_v $opt_x ); # declare these global to be shared with Getopt:Std
+use Config;                     # use to put in platform-specific stuff
+use vars qw( $opt_a $opt_b $opt_c $opt_d $opt_f $opt_g $opt_I $opt_l $opt_m $opt_o $opt_p $opt_t $opt_v $opt_x ); # declare these global to be shared with Getopt:Std
 
 #subroutines
 sub ensureTrailingSlash {
@@ -38,31 +38,32 @@ sub ensureTrailingSlash {
    local $/ = '/'; chomp @_[0]; @_[0] .= '/';
 }
 
-my $version = '';
+my $version = '19.1.0';
 
 # initialize variables: use getopts for these
 GetOptions("abspath|a=s" => \$opt_a,
-	   "blddir|b=s" => \$opt_b,
-	   "cppdefs|c=s" => \$opt_c,
-	   "debug|d" => \$opt_d,
-	   "f" => \$opt_f,
-	   "includes|I=s@" => \$opt_I,
-	   "makefile|m=s" => \$opt_m,
-	   "otherflags|o=s" => \$opt_o,
-	   "program|p=s" => \$opt_p,
-	   "template|t=s" => \$opt_t,
-	   "verbose|v=s" => \$opt_v,
-	   "execute|x" => \$opt_x,
-	  ) or die "\aSyntax: $0 [-a abspath] [-c cppdefs] [-d] [-f] [-I includes] [-m makefile] [-o otherflags] ][-p program] [-t template] [-v] [-x] [targets]\n";
-$opt_v = 1 if $opt_d;	# debug flag turns on verbose flag also
+           "blddir|b=s" => \$opt_b,
+           "cppdefs|c=s" => \$opt_c,
+           "debug|d" => \$opt_d,
+           "f" => \$opt_f,
+           "git|g" => \$opt_g,
+           "includes|I=s@" => \$opt_I,
+           "makefile|m=s" => \$opt_m,
+           "otherflags|o=s" => \$opt_o,
+           "program|p=s" => \$opt_p,
+           "template|t=s" => \$opt_t,
+           "verbose|v=s" => \$opt_v,
+           "execute|x" => \$opt_x,
+          ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] ][-p program] [-t template] [-v] [-x] [targets]\n";
+$opt_v = 1 if $opt_d;   # debug flag turns on verbose flag also
 print "$0 $version\n" if $opt_v;
 
 my $mkfile = $opt_m || 'Makefile';
 print "Making makefile $mkfile ...\n" if $opt_v;
 
-$opt_p = 'a.out' unless $opt_p;	# set default program name
-my @targets = '.';		# current working directory is always included in targets
-push @targets, @ARGV;		# then add remaining arguments on command line
+$opt_p = 'a.out' unless $opt_p; # set default program name
+my @targets = '.';              # current working directory is always included in targets
+push @targets, @ARGV;           # then add remaining arguments on command line
 
 ensureTrailingSlash($opt_a) if $opt_a;
 ensureTrailingSlash($opt_b) if $opt_b;
@@ -78,7 +79,7 @@ my @inc_suffixes = ( q/\.H/, q/\.fh/, q/\.h/, q/\.inc/, q/\.h90/ );
 # suffixes for the target (mkmf -p): if isn't on the list below it's a program
 my @tgt_suffixes = ( q/\.a/ );
 
-my %compile_cmd = (			# command to create .o file from a given source file suffix
+my %compile_cmd = (                     # command to create .o file from a given source file suffix
       q/.F/   => q/$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
       q/.F90/ => q/$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
       q/.c/   => q/$(CC) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CFLAGS) -c/,
@@ -89,9 +90,9 @@ my %compile_cmd = (			# command to create .o file from a given source file suffi
       q/.c++/ => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CPPFLAGS) -c/,
       q/.f/   => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
       q/.f90/ => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/              );
-my %delim_match = ( q/'/ => q/'/,	# hash to find includefile delimiter pair
-		    q/"/ => q/"/,
-		    q/</ => q/>/ );
+my %delim_match = ( q/'/ => q/'/,       # hash to find includefile delimiter pair
+                    q/"/ => q/"/,
+                    q/</ => q/>/ );
 
 #formatting command for MAKEFILE, keeps very long lines to 256 characters
 format MAKEFILE =
@@ -106,7 +107,7 @@ sub print_formatted_list{
    $line = "@_";
    $line =~ s/$opt_a/\$\(SRCROOT\)/g if ( $opt_a );
    $line =~ s/$opt_b/\$\(BUILDROOT\)/g if ( $opt_b );
-   local $: = " \t\n";		# the default formatting word boundary includes the hyphen, but not here
+   local $: = " \t\n";          # the default formatting word boundary includes the hyphen, but not here
    while ( $opt_f && length $line > 254 ) {
       write MAKEFILE, $line;
    }
@@ -131,12 +132,18 @@ if ( $opt_c ) {
       $compile_cmd{'.F'}   = q/$(FC) $(CPPDEFS_XLF) $(FFLAGS) -c/;
       $compile_cmd{'.F90'} = q/$(FC) $(CPPDEFS_XLF) $(FFLAGS) -c/;
    }
-   &print_formatted_list("CPPDEFS = $opt_c") if $opt_c;
 }
+
+if ( $opt_g ) {
+  $opt_c .= ' -D_FILE_VERSION="`git-version-string $<`"';
+}
+
+&print_formatted_list("CPPDEFS = $opt_c") if $opt_c;
+
 if ( $opt_o ) {
   $opt_o =~ s/$opt_a/\$\(SRCROOT\)/g if ( $opt_a );
   $opt_o =~ s/$opt_b/\$\(BUILDROOT\)/g if ( $opt_b );
-  print MAKEFILE "\nOTHERFLAGS = $opt_o\n" if $opt_o;
+  print MAKEFILE "\nOTHERFLAGS = $opt_o\n";
 }
 
 #vb 2009-12-17, include now comes after vardefs, so that it can modify make variables
@@ -163,16 +170,16 @@ if ( $opt_c ) {
    if ( -f $cppdefsfile ) {
       open CPPFILE, $cppdefsfile or die "\aERROR opening cppdefsfile $cppdefsfile: $!\n";
       while ( <CPPFILE> ) {
-	 foreach $word ( split ) {
-	    $olddefs{$word} = 1;
-	 }
+         foreach $word ( split ) {
+            $olddefs{$word} = 1;
+         }
       }
       close CPPFILE;
 #get words that are not in both newdefs and olddefs
 #if you move this foreach{} outside the enclosing if{} then
 #   all cppdefs will be considered changed if there is no .cppdefs file.
       foreach ( keys %newdefs, keys %olddefs ) {
-	 $chgdefs{$_} = 1 unless( $newdefs{$_} && $olddefs{$_} );
+         $chgdefs{$_} = 1 unless( $newdefs{$_} && $olddefs{$_} );
       }
    }
 #write current cppdefs list to file .cppdefs
@@ -199,8 +206,8 @@ delete $chgdefs{''};
 #@objects will contain corresponding objects
 
 #separate targets into directories and files
-my %scanned;			# list of directories/files already scanned
-my %actual_source_of;		# hash returning sourcefile from object
+my %scanned;                    # list of directories/files already scanned
+my %actual_source_of;           # hash returning sourcefile from object
 my %source_of; # sourcefile from object, using SRCROOT variable if present
 my @includepaths;
 my $scanOrder = 0;              # used to remember order of directory scan
@@ -219,24 +226,24 @@ foreach $target ( @targets ) {
       my @files = readdir DIR;
 #find all sourcefiles in directory DIR
       foreach ( @files ) {
-	 # These next two lines appear to not be important
-	 # This is due to "@includepaths=''" line below.
-	 # Leaving them here for now until further testing can be done.
-	 ( $name, $path, $suffix ) = fileparse( "$target$_", @inc_suffixes );
-	 push @includepaths, $target if $suffix; # is this line doing anything? looks like includepaths='' later...
+         # These next two lines appear to not be important
+         # This is due to "@includepaths=''" line below.
+         # Leaving them here for now until further testing can be done.
+         ( $name, $path, $suffix ) = fileparse( "$target$_", @inc_suffixes );
+         push @includepaths, $target if $suffix; # is this line doing anything? looks like includepaths='' later...
 
-	 ( $name, $path, $suffix ) = fileparse( "$target$_", @src_suffixes );
-	 $object = "$name.o";
-	 if( $suffix && !$actual_source_of{$object} ) {
-	    if ( $opt_a and substr($path,0,1) ne '/' ) { # if an abs_path exists, attach it to all relative paths
-	       ensureTrailingSlash($path);
-	       $path = '' if $path eq './';
-	       $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
-	       $path = $opt_a . $path;
-	    }
-	    $actual_source_of{$object} = "$path$name$suffix";
-	    $source_of{$object} = $actual_source_of{$object} unless $source_of{$object};
-	 }
+         ( $name, $path, $suffix ) = fileparse( "$target$_", @src_suffixes );
+         $object = "$name.o";
+         if( $suffix && !$actual_source_of{$object} ) {
+            if ( $opt_a and substr($path,0,1) ne '/' ) { # if an abs_path exists, attach it to all relative paths
+               ensureTrailingSlash($path);
+               $path = '' if $path eq './';
+               $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
+               $path = $opt_a . $path;
+            }
+            $actual_source_of{$object} = "$path$name$suffix";
+            $source_of{$object} = $actual_source_of{$object} unless $source_of{$object};
+         }
       }
       closedir DIR;
       $scanned{$target} = $scanOrder++;
@@ -245,65 +252,65 @@ foreach $target ( @targets ) {
       ( $name, $path, $suffix ) = fileparse( $target, @src_suffixes );
       $object = "$name.o";
       if ( !$actual_source_of{$object} ) {
-	 if ( $suffix ) {
-	    $path = '' if $path eq './';
-	    if ( $opt_a and substr($path,0,1) ne '/' ) { # if an abs_path exists, attach it to all relative paths
-	       ensureTrailingSlash($path);
-	       $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
-	       $path = $opt_a . $path;
-	    }
-	    $actual_source_of{$object} = "$path$name$suffix";
-	    $source_of{$object} = $actual_source_of{$object} unless $source_of{$object};
-	 } else {
-	    ( $name, $path, $suffix ) = fileparse( $target, @inc_suffixes );
-	    if ( ! $suffix ) {
+         if ( $suffix ) {
+            $path = '' if $path eq './';
+            if ( $opt_a and substr($path,0,1) ne '/' ) { # if an abs_path exists, attach it to all relative paths
+               ensureTrailingSlash($path);
+               $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
+               $path = $opt_a . $path;
+            }
+            $actual_source_of{$object} = "$path$name$suffix";
+            $source_of{$object} = $actual_source_of{$object} unless $source_of{$object};
+         } else {
+            ( $name, $path, $suffix ) = fileparse( $target, @inc_suffixes );
+            if ( ! $suffix ) {
 #not a sourcefile: assume it contains list of sourcefiles
 #specify files requiring special commands (e.g special compiler flags) thus:
 #   f90 -Oaggress a.f90
 #if last word on line is not a valid sourcefile, line is ignored
-	       open CMDFILE, $target;
-	       print "Reading commands from $target...\n" if $opt_v;
-	       while ( <CMDFILE> ) {
-		  next if ( $_ eq "\n");
-		  $line = $_;
-		  my @wordlist = split;
-		  $file = @wordlist[$#wordlist]; # last word on line
-		  ( $name, $path, $suffix ) = fileparse( $file, @src_suffixes );
-		  print "file=$file suffix=$suffix in $target\n" if $opt_d;
-		  $object = "$name.o";
-		  if ( $suffix && !$actual_source_of{$object} ) {
-		     $path = '' if $path eq './';
-		     if ( $opt_a and ( substr($path,0,1) ne '/' ) ) { # if an abs_path exists, attach it to all relative paths
-			ensureTrailingSlash($path);
-			$source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
-			$path = $opt_a . $path;
-		     }
-		     $actual_source_of{$object} = "$path$name$suffix";
-		     $source_of{$object} = $actual_source_of{$object} unless $source_of{$object};
-		     $scanned{$path} = $scanOrder++ unless $scanned{$path};
+               open CMDFILE, $target;
+               print "Reading commands from $target...\n" if $opt_v;
+               while ( <CMDFILE> ) {
+                  next if ( $_ eq "\n");
+                  $line = $_;
+                  my @wordlist = split;
+                  $file = @wordlist[$#wordlist]; # last word on line
+                  ( $name, $path, $suffix ) = fileparse( $file, @src_suffixes );
+                  print "file=$file suffix=$suffix in $target\n" if $opt_d;
+                  $object = "$name.o";
+                  if ( $suffix && !$actual_source_of{$object} ) {
+                     $path = '' if $path eq './';
+                     if ( $opt_a and ( substr($path,0,1) ne '/' ) ) { # if an abs_path exists, attach it to all relative paths
+                        ensureTrailingSlash($path);
+                        $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
+                        $path = $opt_a . $path;
+                     }
+                     $actual_source_of{$object} = "$path$name$suffix";
+                     $source_of{$object} = $actual_source_of{$object} unless $source_of{$object};
+                     $scanned{$path} = $scanOrder++ unless $scanned{$path};
 #command for this file is all of line except the filename
-		     $line =~ /\s+$file/; $line=$`;
-		     if ( $line ) {
-			$compile_cmd{"$name$suffix"} = $line;
-			print "Special command for file $name$suffix: ($line)\n" if $opt_v;
-		     }
-		  }
-		  if ( ! $suffix ) { # look for include files
-		     ( $name, $path, $suffix ) = fileparse( $file, @inc_suffixes );
-		     if ( $opt_a and ( substr($path,0,1) ne '/' ) ) { # if an abs_path exists, attach it to all relative paths
-			ensureTrailingSlash($path);
-			$path = $opt_a . $path;
-		     }
-		     print "file=$file path=$path suffix=$suffix order=$scanOrder in $target\n" if $opt_d;
+                     $line =~ /\s+$file/; $line=$`;
+                     if ( $line ) {
+                        $compile_cmd{"$name$suffix"} = $line;
+                        print "Special command for file $name$suffix: ($line)\n" if $opt_v;
+                     }
+                  }
+                  if ( ! $suffix ) { # look for include files
+                     ( $name, $path, $suffix ) = fileparse( $file, @inc_suffixes );
+                     if ( $opt_a and ( substr($path,0,1) ne '/' ) ) { # if an abs_path exists, attach it to all relative paths
+                        ensureTrailingSlash($path);
+                        $path = $opt_a . $path;
+                     }
+                     print "file=$file path=$path suffix=$suffix order=$scanOrder in $target\n" if $opt_d;
 # anything that's found here is an includefile but not a sourcefile...
 # just include directory in scan
-		     $scanned{$path} = $scanOrder++
-		       if ( $suffix && !$scanned{$path} );
-		  }
-	       }
-	       close CMDFILE;
-	    }
-	 }
+                     $scanned{$path} = $scanOrder++
+                       if ( $suffix && !$scanned{$path} );
+                  }
+               }
+               close CMDFILE;
+            }
+         }
       }
    }
 }
@@ -334,10 +341,10 @@ if( $opt_d ) {
    print "DEBUG: objects= @objects\n";
 }
 
-my %obj_of_module;		# hash returning name of object file containing module
-my %modules_used_by;		# hash of modules used by a given source file (hashed against the corresponding object)
-my %includes_in;		# hash of includes in a given source file (hashed against the corresponding object)
-my %has_chgdefs;		# hash of files contains cppdefs that have been changed
+my %obj_of_module;              # hash returning name of object file containing module
+my %modules_used_by;            # hash of modules used by a given source file (hashed against the corresponding object)
+my %includes_in;                # hash of includes in a given source file (hashed against the corresponding object)
+my %has_chgdefs;                # hash of files contains cppdefs that have been changed
 #subroutine to scan file for use and module statements, and include files
 # first argument is $object, second is $file
 sub scanfile_for_keywords {
@@ -347,8 +354,8 @@ sub scanfile_for_keywords {
 #if file has already been scanned, return: but first check if any .o needs to be removed
    if( $scanned{$file} ) {
        if( $has_chgdefs{$file} and -f $object ) {
-	   unlink $object or die "\aERROR unlinking $object: $!\n";
-	   print "   Object $object is out-of-date because of change to cppdefs, removed.\n" if $opt_v;
+           unlink $object or die "\aERROR unlinking $object: $!\n";
+           print "   Object $object is out-of-date because of change to cppdefs, removed.\n" if $opt_v;
        }
        return;
    }
@@ -356,29 +363,29 @@ sub scanfile_for_keywords {
    open FILE, $file or die "\aERROR opening file $file of object $object: $!\n";
    foreach $line ( <FILE> ) {
       if ( $line =~ /^\s*module\s+(\w*)/ix ) {
-	 if ( $1 ) {
-	    my $module = lc $1;
-	    if ( $obj_of_module{$module} && $module ne "procedure" ) {
-	       die "\a\nAMBIGUOUS: Module $module is associated with $file as well as $actual_source_of{$obj_of_module{$module}}.\n";
-	    }
-	    $obj_of_module{$module} = $object;
-	 }
+         if ( $1 ) {
+            my $module = lc $1;
+            if ( $obj_of_module{$module} && $module ne "procedure" ) {
+               die "\a\nAMBIGUOUS: Module $module is associated with $file as well as $actual_source_of{$obj_of_module{$module}}.\n";
+            }
+            $obj_of_module{$module} = $object;
+         }
       }
       if ( $line =~ /^\s*use\s*(\w*)/ix ) {
-	 $modules_used_by{$object} .= ' ' . lc $1 if $1;
+         $modules_used_by{$object} .= ' ' . lc $1 if $1;
       }
       if ( $line =~ /^[\#\s]*include\s*(['""'<])([\w\.\/]*)$delim_match{\1}/ix ) {
-	 $includes_in{$file} .= ' ' . $2 if $2;
+         $includes_in{$file} .= ' ' . $2 if $2;
       }
       foreach ( keys %chgdefs ) {
-	 $_ .= '='; /\s*=/; $word=$`; #cut string at =sign, else whole string
-	 if ( $line =~ /\b$word\b/ ) {
-	    $has_chgdefs{$file} = 1;
-	    if ( -f $object ) {
-	       unlink $object or die "\aERROR unlinking $object: $!\n";
-	       print "   Object $object is out-of-date because of change to cppdef $word, removed.\n" if $opt_v;
-	    }
-	 }
+         $_ .= '='; /\s*=/; $word=$`; #cut string at =sign, else whole string
+         if ( $line =~ /\b$word\b/ ) {
+            $has_chgdefs{$file} = 1;
+            if ( -f $object ) {
+               unlink $object or die "\aERROR unlinking $object: $!\n";
+               print "   Object $object is out-of-date because of change to cppdef $word, removed.\n" if $opt_v;
+            }
+         }
       }
    }
    close FILE;
@@ -390,16 +397,16 @@ foreach $object ( @objects ) {
    &scanfile_for_keywords( $object, $actual_source_of{$object} );
 }
 
-my %off_sources;		# list of source files not in current directory
-my %includes;			# global list of includes
-my %used;			# list of object files that are used by others
+my %off_sources;                # list of source files not in current directory
+my %includes;                   # global list of includes
+my %used;                       # list of object files that are used by others
 my @cmdline;
 # for each file in sources, write down dependencies on includes and modules
 foreach $object ( sort @objects ) {
    print STDERR '.' unless $opt_v; # show progress on screen (STDERR is used because it is unbuffered)
-   my %is_used;			# hash of objects containing modules used by current object
-   my %obj_of_include;		# hash of includes for current object
-   $is_used{$object} = 1;	# initialize with current object so as to avoid recursion
+   my %is_used;                 # hash of objects containing modules used by current object
+   my %obj_of_include;          # hash of includes for current object
+   $is_used{$object} = 1;       # initialize with current object so as to avoid recursion
    print "Collecting dependencies for $object ...\n" if $opt_v;
 
    # Replace opt_a in source_of if found
@@ -419,10 +426,10 @@ foreach $object ( sort @objects ) {
 #we need to check target ne '' also below, since it is not mkmf's privilege
 #to complain about modules not found. That should be left to the compiler.
       if( $target and !$is_used{$target} ) {
-	 $is_used{$target} = 1;
-	 push @cmdline, $target;
-	 $used{$target} = 1;
-	 print "   found module $module in object $target ...\n" if $opt_v;
+         $is_used{$target} = 1;
+         push @cmdline, $target;
+         $used{$target} = 1;
+         print "   found module $module in object $target ...\n" if $opt_v;
       }
    }
 #write the command line: if no file-specific command, use generic command for this suffix
@@ -446,41 +453,41 @@ foreach $object ( sort @objects ) {
       my $object = shift;
       my $file = shift;
       foreach ( split /\s+/, $includes_in{$file} ) {
-	 print "object=$object, file=$file, include=$_.\n" if $opt_d;
-	 ( $incname, $incpath, $incsuffix ) = fileparse( $_, @inc_suffixes );
-	 if( $incsuffix ) {	# only check for files with proper suffix
-	    undef $incpath if $incpath eq './';
-	    if( $incpath =~ /^\// ) {
-	       @paths = $incpath; # exact incpath specified, use it
-	    } else {
-	       @paths = @dirs;
-	    }
-	    foreach ( @paths ) {
-	       local $/ = '/'; chomp; # remove trailing / if present
-	       my $newincpath = "$_/$incpath" if $_;
-	       undef $newincpath if $newincpath eq './';
-	       $incfile = "$newincpath$incname$incsuffix";
-	       if ( $opt_a and ( substr($newincpath,0,1) ne '/' ) ) {
-		  $newincpath = '$(SRCROOT)' . $newincpath;
-	       }
-	       $newincpath =~ s/$opt_a/\$\(SRCROOT\)/g if ( $opt_a );
-	       $newincpath =~ s/$opt_b/\$\(BUILDROOT\)/g if ( $opt_b );
-	       print "DEBUG: checking for $incfile in $_ ...\n" if $opt_d;
-	       if ( -f $incfile and $obj_of_include{$incfile} ne $object ) {
-		  print "   found $incfile ...\n" if $opt_v;
-		  push @cmdline, "$newincpath$incname$incsuffix";
-		  $includes{$incfile} = 1;
-		  chomp( $newincpath, $path );
-		  $off_sources{$incfile} = 1 if $newincpath;
-		  $newincpath = '.' if $newincpath eq '';
-		  push @includepaths, $newincpath unless( grep $_ eq $newincpath, @includepaths );
-		  &scanfile_for_keywords($object,$incfile);
-		  $obj_of_include{$incfile} = $object;
-		  &get_include_list($object,$incfile); # recursively look for includes
-		  last;
-	       }
-	    }
-	 }
+         print "object=$object, file=$file, include=$_.\n" if $opt_d;
+         ( $incname, $incpath, $incsuffix ) = fileparse( $_, @inc_suffixes );
+         if( $incsuffix ) {     # only check for files with proper suffix
+            undef $incpath if $incpath eq './';
+            if( $incpath =~ /^\// ) {
+               @paths = $incpath; # exact incpath specified, use it
+            } else {
+               @paths = @dirs;
+            }
+            foreach ( @paths ) {
+               local $/ = '/'; chomp; # remove trailing / if present
+               my $newincpath = "$_/$incpath" if $_;
+               undef $newincpath if $newincpath eq './';
+               $incfile = "$newincpath$incname$incsuffix";
+               if ( $opt_a and ( substr($newincpath,0,1) ne '/' ) ) {
+                  $newincpath = '$(SRCROOT)' . $newincpath;
+               }
+               $newincpath =~ s/$opt_a/\$\(SRCROOT\)/g if ( $opt_a );
+               $newincpath =~ s/$opt_b/\$\(BUILDROOT\)/g if ( $opt_b );
+               print "DEBUG: checking for $incfile in $_ ...\n" if $opt_d;
+               if ( -f $incfile and $obj_of_include{$incfile} ne $object ) {
+                  print "   found $incfile ...\n" if $opt_v;
+                  push @cmdline, "$newincpath$incname$incsuffix";
+                  $includes{$incfile} = 1;
+                  chomp( $newincpath, $path );
+                  $off_sources{$incfile} = 1 if $newincpath;
+                  $newincpath = '.' if $newincpath eq '';
+                  push @includepaths, $newincpath unless( grep $_ eq $newincpath, @includepaths );
+                  &scanfile_for_keywords($object,$incfile);
+                  $obj_of_include{$incfile} = $object;
+                  &get_include_list($object,$incfile); # recursively look for includes
+                  last;
+               }
+            }
+         }
       }
    }
 }
