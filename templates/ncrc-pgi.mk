@@ -46,7 +46,7 @@ FPPFLAGS = $(INCLUDE)
 FFLAGS = -i4 -r8 -byteswapio -Mcray=pointer -Mcray=pointer -Mflushz -Mdaz -D_F2000
 FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
 FFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
-FFLAGS_REPRO = -O2 $(NOFMA)
+FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse $(NOFMA)
 FFLAGS_OPENMP = -mp
 FFLAGS_VERBOSE = -v
 
