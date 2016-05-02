@@ -1,6 +1,6 @@
 # template for the Intel fortran compiler
 # typical use with mkmf
-# mkmf -t template.ifc -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t ncrc-intel.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 ############
 # commands #
 ############
@@ -23,7 +23,7 @@ need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
 ifneq ($(need),$(ok))
 $(error Need at least make version $(need).  Load module gmake/3.81)
-endif 
+endif
 
 MAKEFLAGS += --jobs=2
 
@@ -33,21 +33,26 @@ INCLUDE = -I$(NETCDF_ROOT)/include
 
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
 
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback $(INCLUDE)
-FFLAGS_OPT = -O3 -debug minimal -fp-model source -override-limits
+# -msse2 is added as a workaround for reproducibility on the c3 system.  We in the
+# modeling systems group are looking for why this is needed to allow run-to-run
+# reproducibility on the c3 system.
+FFLAGS := -msse2 -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback $(INCLUDE)
+FFLAGS_OPT = -O3 -debug minimal -fp-model source
 FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv
-FFLAGS_REPRO = -O2 -debug minimal -fp-model source -override-limits
+FFLAGS_REPRO = -O2 -debug minimal -fp-model source
 FFLAGS_OPENMP = -openmp
-FFLAGS_VERBOSE = -v -V -what
+FFLAGS_VERBOSE = -v -V -what -warn all
 
-CFLAGS := -D__IFC -sox -traceback
+CFLAGS := -D__IFC -msse2 -sox -traceback
 CFLAGS_OPT = -O2 -debug minimal
+CFLAGS_REPRO = -O2 -debug minimal
 CFLAGS_OPENMP = -openmp
-CFLAGS_DEBUG = -O0 -g -ftrapuv 
+CFLAGS_DEBUG = -O0 -g -ftrapuv
+CFLAGS_VERBOSE = -w3
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = -O3 -debug minimal -fp-model source -override-limits
+FFLAGS_TEST = -O3 -debug minimal -fp-model source
 CFLAGS_TEST = -O2
 
 LDFLAGS :=
@@ -98,7 +103,7 @@ else
   LIBS += -lnetcdf
 endif
 
-LIBS += 
+LIBS +=
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
@@ -110,13 +115,13 @@ LDFLAGS += $(LIBS)
 # .f, .f90, .F, .F90. Given a sourcefile <file>.<ext>, where <ext> is one of
 # the above, this provides a number of default actions:
 
-# make <file>.opt	create an optimization report
-# make <file>.o		create an object file
-# make <file>.s		create an assembly listing
-# make <file>.x		create an executable file, assuming standalone
-#			source
-# make <file>.i		create a preprocessed file (for .F)
-# make <file>.i90	create a preprocessed file (for .F90)
+# make <file>.opt       create an optimization report
+# make <file>.o         create an object file
+# make <file>.s         create an assembly listing
+# make <file>.x         create an executable file, assuming standalone
+#                       source
+# make <file>.i         create a preprocessed file (for .F)
+# make <file>.i90       create a preprocessed file (for .F90)
 
 # The macro TMPFILES is provided to slate files like the above for removal.
 

@@ -48,14 +48,14 @@ FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
 FFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
 FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse $(NOFMA)
 FFLAGS_OPENMP = -mp
-FFLAGS_VERBOSE = -v
+FFLAGS_VERBOSE = -v -Minform=inform
 
 CPPFLAGS = $(INCLUDE)
 CFLAGS =
 CFLAGS_OPT = -O2
 CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
 CFLAGS_OPENMP = -mp
-CFLAGS_VERBOSE = -v
+CFLAGS_VERBOSE = -v -Minform=inform
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
@@ -114,13 +114,13 @@ LDFLAGS += $(LIBS)
 # .f, .f90, .F, .F90. Given a sourcefile <file>.<ext>, where <ext> is one of
 # the above, this provides a number of default actions:
 
-# make <file>.opt	create an optimization report
-# make <file>.o		create an object file
-# make <file>.s		create an assembly listing
-# make <file>.x		create an executable file, assuming standalone
-#			source
-# make <file>.i		create a preprocessed file (for .F)
-# make <file>.i90	create a preprocessed file (for .F90)
+# make <file>.opt       create an optimization report
+# make <file>.o         create an object file
+# make <file>.s         create an assembly listing
+# make <file>.x         create an executable file, assuming standalone
+#                       source
+# make <file>.i         create a preprocessed file (for .F)
+# make <file>.i90       create a preprocessed file (for .F90)
 
 # The macro TMPFILES is provided to slate files like the above for removal.
 
