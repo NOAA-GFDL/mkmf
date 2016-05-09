@@ -3,7 +3,7 @@
 #-----------------------------------------------------------------------
 #              mkmf: Perl script for makefile construction
 #
-# AUTHOR: V. Balaji (v.balaji@noaa.gov)
+# AUTHOR: V. Balaji (@balaji-gfdl) and Seth Underwood (@underwoo)
 #         Princeton University/GFDL
 #
 # Full web documentation for mkmf:
@@ -50,11 +50,12 @@ GetOptions("abspath|a=s" => \$opt_a,
            "includes|I=s@" => \$opt_I,
            "makefile|m=s" => \$opt_m,
            "otherflags|o=s" => \$opt_o,
+	   "linkflags|l=s" => \$opt_l,
            "program|p=s" => \$opt_p,
            "template|t=s" => \$opt_t,
            "verbose|v=s" => \$opt_v,
            "execute|x" => \$opt_x,
-          ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] ][-p program] [-t template] [-v] [-x] [targets]\n";
+          ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] [-l linkflags] [-p program] [-t template] [-v] [-x] [targets]\n";
 $opt_v = 1 if $opt_d;   # debug flag turns on verbose flag also
 print "$0 $version\n" if $opt_v;
 
@@ -529,7 +530,7 @@ if( $suffix eq '.a' ) {
    print MAKEFILE "$opt_p: \$(OBJ)\n\t\$(AR) \$(ARFLAGS) $opt_p \$(OBJ)\n\n";
 } else {
 # opt_l is a new flag added to take care of libraries
-   print MAKEFILE "$opt_p: \$(OBJ) $opt_l\n\t\$(LD) \$(OBJ) -o $opt_p $opt_l \$(LDFLAGS)\n\n";
+   print MAKEFILE "$opt_p: \$(OBJ)\n\t\$(LD) \$(OBJ) -o $opt_p $opt_l \$(LDFLAGS)\n\n";
 }
 close MAKEFILE;
 print " $mkfile is ready.\n";
