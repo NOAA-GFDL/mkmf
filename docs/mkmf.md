@@ -35,7 +35,7 @@ User guide
 
 ### Syntax
 
-mkmf [-a abspath] [-b bldpath] [-c cppdefs] [-o otherflags] [-d] [-f] [-g] [-m makefile] [-p program] [-t template] [-v] [-x] [args]
+mkmf [-a abspath] [-b bldpath] [-c cppdefs] [-o otherflags] [-l <linkflags>] [-I <linkpath>] [-d] [-f] [-g] [-m makefile] [-p program] [-t template] [-v] [-x] [args]
 
 ### Options
 
@@ -53,6 +53,10 @@ mkmf [-a abspath] [-b bldpath] [-c cppdefs] [-o otherflags] [-d] [-f] [-g] [-m m
   these can be any flags. Also, by Fortran convention, cpp is only
   invoked on .F and .F90 files; __otherflags__ apply to all source
   files (.f and .f90 as well).
+* __-l linkflags__ is a string of link directives to be passed to the
+  link command in the makefile.
+* __-I includepath__ is a path that contains include files.  This is
+  similar to how _-I_ is used by most compilers.
 * __-d__ is a debug flag to __mkmf__ (much more verbose than __-v__,
   but probably of use only if you are modifying __mkmf__ itself).
 * __-f__ is a formatting flag to restrict lines in the makefile to 256

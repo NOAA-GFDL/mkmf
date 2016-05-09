@@ -6,7 +6,7 @@ MAN1DIR = $(PREFIX)/man/man1
 HTMLDIR = $(PREFIX)/share/FRE
 BINDIR = $(PREFIX)/bin
 
-VERSION = "19.1.0"
+VERSION = "19.2.0"
 DATE := $(shell date +"%Y %B %d")
 
 POD2MAN = pod2man

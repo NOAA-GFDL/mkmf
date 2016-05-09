@@ -8,7 +8,7 @@ mkmf - Make Makefile
 SYNOPSIS
 --------
 
-mkmf [-a <abspath>] [-b <bldpath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-g] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
+mkmf [-a <abspath>] [-b <bldpath>] [-c <cppdefs>] [-o <otherflags>] [-l <linkflags>] [-I <linkpath>] [-d] [-f] [-g] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
 
 DESCRIPTION
 -----------
@@ -67,6 +67,14 @@ source files: it is rather similar to _<cppdefs>_ except that these
 can be any flags.  Also, by Fortran convention, cpp is only invoked on
 .F and .F90 files. _<otherflags>_ apply to all source files (.f and
 .f90 as well).
+
+*-l* _<linkflags>_::
+_<linkflags>_ is a string of link directives to be passed to the link
+command in the makefile.
+
+*-I* _<includepath>_::
+_<indlucePath>_ is a path that contains include files.  This is
+similar to how *-I* is used by most compilers.
 
 *-d*::
 Debug *mkmf*.  Much more verbose than *-v*, but probably of use only

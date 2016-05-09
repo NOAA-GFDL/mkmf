@@ -4,7 +4,7 @@ mkmf -  Make Makefile
 
 =head1 SYNOPSIS
 
-mkmf [-a <abspath>] [-b <bldpath>] [-c <cppdefs>] [-o <otherflags>] [-d] [-f] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
+mkmf [-a <abspath>] [-b <bldpath>] [-c <cppdefs>] [-o <otherflags>] [-l <linkflags>] [-I <linkpath>] [-d] [-f] [-m <makefile>] [-p <program>] [-t <template>] [-v] [-x] [<args>]
 
 =head1 DESCRIPTION
 
@@ -81,6 +81,16 @@ the source files: it is rather similar to I<< <cppdefs> >> except that
 these can be any flags.  Also, by Fortran convention, cpp is only
 invoked on .F and .F90 files. I<< <otherflags> >> apply to all source
 files (.f and .f90 as well).
+
+=item B<-l> I<< <linkflags> >>
+
+I<< <linkflags> >> is a string of link directives to be passed to the
+link command in the makefile.
+
+=item <B-I> I<< <includepath> >>
+
+I<< <indlucePath> >> is a path that contains include files.  This is
+similar to how *-I* is used by most compilers.
 
 =item B<-d>
 
