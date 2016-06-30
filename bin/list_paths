@@ -49,13 +49,13 @@ shift argv
 unset noclobber
 if( $?DEBUG )echo Running $0 in $cwd, args $*
 
-set src = "$out.src.tmp" 
+set src = "$out.src.tmp"
 set doc = "$out.doc.tmp"
 set outdoc = "$out.html"
 
-touch $out	# create the file if it doesn't exist
+touch $out   # create the file if it doesn't exist
 cp $out $src
-find $* -type f \
+find $* \( -type f -o -type l \) -a \
  \( -name \*.c   \
  -o -name \*.C   \
  -o -name \*.f   \
@@ -71,8 +71,8 @@ find $* -type f \
 sed 's:.*/\(.*\):\0 \1:' $src | nl | sort --key 3 -u | sort -n | awk '{print $2}' > $out
 echo "A list of the files you checked out is in the file $out ..."
 
-touch $doc	# create the file if it doesn't exist
-find $* -type f \
+touch $doc   # create the file if it doesn't exist
+find $* \( -type f -o -type l \) -a \
  \( -name \*.html \
  -o -name \*.ps   \
  -o -name \*.txt  \
