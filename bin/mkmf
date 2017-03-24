@@ -50,10 +50,10 @@ GetOptions("abspath|a=s" => \$opt_a,
            "includes|I=s@" => \$opt_I,
            "makefile|m=s" => \$opt_m,
            "otherflags|o=s" => \$opt_o,
-	   "linkflags|l=s" => \$opt_l,
+           "linkflags|l=s" => \$opt_l,
            "program|p=s" => \$opt_p,
            "template|t=s" => \$opt_t,
-           "verbose|v=s" => \$opt_v,
+           "verbose|v" => \$opt_v,
            "execute|x" => \$opt_x,
           ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] [-l linkflags] [-p program] [-t template] [-v] [-x] [targets]\n";
 $opt_v = 1 if $opt_d;   # debug flag turns on verbose flag also
@@ -238,7 +238,7 @@ foreach $target ( @targets ) {
          if( $suffix && !$actual_source_of{$object} ) {
             if ( $opt_a and substr($path,0,1) ne '/' ) { # if an abs_path exists, attach it to all relative paths
                ensureTrailingSlash($path);
-               $path = '' if $path eq './';
+               $path =~ s@^\./@@;
                $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
                $path = $opt_a . $path;
             }
@@ -254,7 +254,7 @@ foreach $target ( @targets ) {
       $object = "$name.o";
       if ( !$actual_source_of{$object} ) {
          if ( $suffix ) {
-            $path = '' if $path eq './';
+            $path =~ s@^\./@@;
             if ( $opt_a and substr($path,0,1) ne '/' ) { # if an abs_path exists, attach it to all relative paths
                ensureTrailingSlash($path);
                $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
@@ -275,12 +275,12 @@ foreach $target ( @targets ) {
                   next if ( $_ eq "\n");
                   $line = $_;
                   my @wordlist = split;
-                  $file = @wordlist[$#wordlist]; # last word on line
+                  $file = $wordlist[$#wordlist]; # last word on line
                   ( $name, $path, $suffix ) = fileparse( $file, @src_suffixes );
                   print "file=$file suffix=$suffix in $target\n" if $opt_d;
                   $object = "$name.o";
                   if ( $suffix && !$actual_source_of{$object} ) {
-                     $path = '' if $path eq './';
+                     $path =~ s@^\./@@;
                      if ( $opt_a and ( substr($path,0,1) ne '/' ) ) { # if an abs_path exists, attach it to all relative paths
                         ensureTrailingSlash($path);
                         $source_of{$object} = '$(SRCROOT)' . "$path$name$suffix";
@@ -416,7 +416,8 @@ foreach $object ( sort @objects ) {
 
    @cmdline = "$object: $source_of{$object}";
    ( $name, $path, $suffix ) = fileparse( $actual_source_of{$object}, @src_suffixes );
-   $off_sources{$source_of{$object}} = 1 unless( $path eq './' or $path eq '' );
+   $path =~ s@^\./@@;
+   $off_sources{$source_of{$object}} = 1 unless( $path =~ '^\s*$' );
 #includes: done in subroutine since it must be recursively called to look for embedded includes
    @includepaths = '';
    &get_include_list( $object, $actual_source_of{$object} );
@@ -456,8 +457,8 @@ foreach $object ( sort @objects ) {
       foreach ( split /\s+/, $includes_in{$file} ) {
          print "object=$object, file=$file, include=$_.\n" if $opt_d;
          ( $incname, $incpath, $incsuffix ) = fileparse( $_, @inc_suffixes );
+         $incpath =~ s@^\./@@;
          if( $incsuffix ) {     # only check for files with proper suffix
-            undef $incpath if $incpath eq './';
             if( $incpath =~ /^\// ) {
                @paths = $incpath; # exact incpath specified, use it
             } else {
@@ -466,7 +467,7 @@ foreach $object ( sort @objects ) {
             foreach ( @paths ) {
                local $/ = '/'; chomp; # remove trailing / if present
                my $newincpath = "$_/$incpath" if $_;
-               undef $newincpath if $newincpath eq './';
+               $newincpath =~ s@^\./@@;
                $incfile = "$newincpath$incname$incsuffix";
                if ( $opt_a and ( substr($newincpath,0,1) ne '/' ) ) {
                   $newincpath = '$(SRCROOT)' . $newincpath;
