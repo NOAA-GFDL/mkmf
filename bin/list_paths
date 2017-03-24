@@ -53,7 +53,7 @@ set src = "$out.src.tmp"
 set doc = "$out.doc.tmp"
 set outdoc = "$out.html"
 
-touch $out	# create the file if it doesn't exist
+touch $out      # create the file if it doesn't exist
 cp $out $src
 find $* -type f \
  \( -name \*.c   \
@@ -71,7 +71,7 @@ find $* -type f \
 sed 's:.*/\(.*\):& \1:' $src | nl | sort --key 3 -u | sort -n | awk '{print $2}' > $out
 echo "A list of the files you checked out is in the file $out ..."
 
-touch $doc	# create the file if it doesn't exist
+touch $doc      # create the file if it doesn't exist
 find $* -type f \
  \( -name \*.html \
  -o -name \*.ps   \
