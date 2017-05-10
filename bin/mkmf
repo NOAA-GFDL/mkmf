@@ -53,7 +53,7 @@ GetOptions("abspath|a=s" => \$opt_a,
 	   "linkflags|l=s" => \$opt_l,
            "program|p=s" => \$opt_p,
            "template|t=s" => \$opt_t,
-           "verbose|v=s" => \$opt_v,
+           "verbose|v" => \$opt_v,
            "execute|x" => \$opt_x,
           ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] [-l linkflags] [-p program] [-t template] [-v] [-x] [targets]\n";
 $opt_v = 1 if $opt_d;   # debug flag turns on verbose flag also
