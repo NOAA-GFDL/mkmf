@@ -30,7 +30,7 @@ use strict;
 use File::Basename;
 use Getopt::Long qw(:config posix_default bundling no_ignore_case);
 use Config;                     # use to put in platform-specific stuff
-use vars qw( $opt_a $opt_b $opt_c $opt_d $opt_f $opt_g $opt_I $opt_l $opt_m $opt_o $opt_p $opt_t $opt_v $opt_x ); # declare these global to be shared with Getopt:Std
+use vars qw( $opt_a $opt_b $opt_c $opt_d $opt_f $opt_g $opt_I $opt_l $opt_m $opt_o $opt_p $opt_t $opt_v $opt_x $opt_use_cpp); # declare these global to be shared with Getopt:Std
 
 #subroutines
 sub ensureTrailingSlash {
@@ -55,7 +55,8 @@ GetOptions("abspath|a=s" => \$opt_a,
            "template|t=s" => \$opt_t,
            "verbose|v" => \$opt_v,
            "execute|x" => \$opt_x,
-          ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] [-l linkflags] [-p program] [-t template] [-v] [-x] [targets]\n";
+           "use-cpp" => \$opt_use_cpp,
+          ) or die "\aSyntax: $0 [-a abspath] [-b blddir] [-c cppdefs] [-d] [-f] [-g] [-I includes] [-m makefile] [-o otherflags] [-l linkflags] [-p program] [-t template] [-v] [-x] [--use-cpp] [targets]\n";
 $opt_v = 1 if $opt_d;   # debug flag turns on verbose flag also
 print "$0 $version\n" if $opt_v;
 
@@ -436,16 +437,33 @@ foreach $object ( sort @objects ) {
 #write the command line: if no file-specific command, use generic command for this suffix
    &print_formatted_list(@cmdline);
    $file = $actual_source_of{$object};
-   if ( $compile_cmd{$name.$suffix} ) {
-      print MAKEFILE "\t$compile_cmd{$name.$suffix}";
+   sub print_compile_cmd {
+      my ( $name, $suffix ) = @_;
+      if ( $compile_cmd{$name.$suffix} ) {
+         print MAKEFILE "\t$compile_cmd{$name.$suffix}";
+      } else {
+         print MAKEFILE "\t$compile_cmd{$suffix}";
+      }
+   }
+   sub print_includes {
+      foreach ( @includepaths ) { # include files may be anywhere in directory array
+         s/$opt_a/\$\(SRCROOT\)/ if $opt_a;
+         print MAKEFILE " -I$_" if $_;
+      }
+   }
+   if ( $opt_use_cpp && $suffix eq ".F90" ) {
+      print MAKEFILE q/	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
+	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc)/;
+      &print_includes;
+      print MAKEFILE "\n";
+      &print_compile_cmd( $name, '.f90' );
+      print MAKEFILE " -o \$@ \t\$(preproc)";
    } else {
-      print MAKEFILE "\t$compile_cmd{$suffix}";
+      &print_compile_cmd( $name, $suffix );
+      &print_includes;
+      print MAKEFILE "\t$source_of{$object}";
    }
-   foreach ( @includepaths ) { # include files may be anywhere in directory array
-      $_ =~ s/$opt_a/\$\(SRCROOT\)/ if $opt_a;
-      print MAKEFILE " -I$_" if $_;
-   }
-   print MAKEFILE "\t$source_of{$object}\n";
+   print MAKEFILE "\n";
 
 # subroutine to seek out includes recursively
    sub get_include_list {
