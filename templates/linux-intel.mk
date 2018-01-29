@@ -1,54 +1,134 @@
-# template for the Intel fortran compiler
-# typical use with mkmf
+# Template for the Intel fortran compiler on Linux systems
+#
+# Typical use with mkmf
 # mkmf -t linux-intel.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+
 ############
-# commands #
-############
+# Command Macros
 FC = ifort
 CC = icc
 CXX = icpc
 LD = ifort
-#########
-# flags #
-#########
-DEBUG =
-REPRO =
-VERBOSE =
-OPENMP =
+
+#######################
+# Build target macros
+#
+# Macros that modify compiler flags used in the build.  Target
+# macrose are usually set on the call to make:
+#
+#    make REPRO=on NETCDF=3
+#
+# Most target macros are activated when their value is non-blank.
+# Some have a single value that is checked.  Others will use the
+# value of the macro in the compile command.
+
+DEBUG =              # If non-blank, perform a debug build (Cannot be
+                     # mixed with REPRO or TEST)
+
+REPRO =              # If non-blank, erform a build that guarentees
+                     # reprodicuibilty from run to run.  Cannot be used
+                     # with DEBUG or TEST
+
+TEST  =              # If non-blank, use the compiler options defined in
+                     # the FFLAGS_TEST and CFLAGS_TEST macros.  Cannot be
+                     # use with REPRO or DEBUG
+
+VERBOSE =            # If non-blank, add additional verbosity compiler
+                     # options
+
+OPENMP =             # If non-blank, compile with openmp enabled
+
+NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
+                     # compiler option.  Default behavior is to compile
+                     # with -qoverride-limits.
+
+NETCDF =             # If value is '3' and CPPDEFS contains
+                     # '-Duse_netCDF', then the additional cpp macro
+                     # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
+
+INCLUDES =           # A list of -I Include directories to be added to the
+                     # the compile command.
+
+SSE = -msse2         # The SSE options to be used to compile.  If blank,
+                     # than use the default SSE settings for the host.
+                     # Current default is to use SSE2.
+
+COVERAGE =           # Add the code coverage compile options.
+
+# Need to use at least GNU Make version 3.81
+need := 3.81
+ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
+ifneq ($(need),$(ok))
+$(error Need at least make version $(need).  Load module gmake/3.81)
+endif
+
+# REPRO, DEBUG and TEST need to be mutually exclusive of each other.
+# Make sure the user hasn't supplied two at the same time
+ifdef REPRO
+ifneq ($(DEBUG),)
+$(error Options REPRO and DEBUG cannot be used together)
+else ifneq ($(TEST),)
+$(error Options REPRO and TEST cannot be used together)
+endif
+else ifdef DEBUG
+ifneq ($(TEST),)
+$(error Options DEBUG and TEST cannot be used together)
+endif
+endif
 
 MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
-FPPFLAGS := -fpp -Wp,-w
+# Macro for Fortran preprocessor
+FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 
+# Base set of Fortran compiler flags
 FFLAGS := -fno-alias -stack_temps -safe_cray_ptr -ftz -i_dynamic -assume byterecl -i4 -r8 -nowarn -g -sox -traceback
+
+# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O2
 FFLAGS_REPRO = -fpmodel source -O2
 FFLAGS_DEBUG = -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -debug variable_locations -fpe0 -ftrapuv
+
+# Flags to add additional build options
 FFLAGS_OPENMP = -openmp
-FFLAGS_VERBOSE = -v -V -what
+FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
+FFLAGS_VERBOSE = -v -V -what -warn all
+FFLAGS_COVERAGE = -prof-gen=srcpos
 
-
+# Base set of C compiler flags
 CFLAGS := -D__IFC -sox -traceback
+
+# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
-CFLAGS_OPENMP = -openmp
+CFLAGS_REPRO = -O2
 CFLAGS_DEBUG = -O0 -g -ftrapuv
+
+# Flags to add additional build options
+CFLAGS_OPENMP = -qopenmp
+CFLAGS_VERBOSE = -w3
+CFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = -O2
-CFLAGS_TEST = -O2
+FFLAGS_TEST = $(FFLAGS_OPT)
+CFLAGS_TEST = $(CFLAGS_OPT)
 
 LDFLAGS :=
 LDFLAGS_OPENMP := -openmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
+LDFLAGS_COVERAGE = -prof-gen=srcpos
 
-ifneq ($(REPRO),)
+# start with blank LIBS
+LIBS =
+
+# Get compile flags based on target macros.
+ifdef REPRO
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
-else ifneq ($(DEBUG),)
+else ifdef DEBUG
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
-else ifneq ($(TEST),)
+else ifdef TEST
 CFLAGS += $(CFLAGS_TEST)
 FFLAGS += $(FFLAGS_TEST)
 else
@@ -56,13 +136,22 @@ CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
 endif
 
-ifneq ($(OPENMP),)
+ifneq OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
 endif
 
-ifneq ($(VERBOSE),)
+ifdef SSE
+CFLAGS += $(SSE)
+FFLAGS += $(SSE)
+endif
+
+ifdef NO_OVERRIDE_LIMITS
+FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
+endif
+
+ifdef VERBOSE
 CFLAGS += $(CFLAGS_VERBOSE)
 FFLAGS += $(FFLAGS_VERBOSE)
 LDFLAGS += $(LDFLAGS_VERBOSE)
@@ -73,6 +162,15 @@ ifeq ($(NETCDF),3)
   ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
     CPPDEFS += -Duse_LARGEFILE
   endif
+endif
+
+ifdef COVERAGE
+ifdef BUILDROOT
+PROF_DIR=-prof-dir=$(BUILDROOT)
+endif
+CFLAGS += $(CFLAGS_COVERAGE) $(PROF_DIR)
+FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
+LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
 LIBS := $(shell nc-config --flibs) $(shell pkg-config --libs mpich2-f90)
