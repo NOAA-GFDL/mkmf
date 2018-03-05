@@ -83,6 +83,10 @@ FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 
 # Base set of Fortran compiler flags
 FFLAGS := -fno-alias -stack_temps -safe_cray_ptr -ftz -i_dynamic -assume byterecl -i4 -r8 -nowarn -g -sox -traceback
+# Fortran Compiler flags for the NetCDF library
+FFLAGS += $(shell nf-config --fflags)
+# Fortran Compiler flags for the MPICH MPI library
+FFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O2
@@ -97,6 +101,10 @@ FFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Base set of C compiler flags
 CFLAGS := -D__IFC -sox -traceback
+# C Compiler flags for the NetCDF library
+CFLAGS += $(shell nc-config --cflags)
+# C Compiler flags for the MPICH MPI library
+CFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
@@ -113,12 +121,13 @@ CFLAGS_COVERAGE = -prof-gen=srcpos
 FFLAGS_TEST = $(FFLAGS_OPT)
 CFLAGS_TEST = $(CFLAGS_OPT)
 
+# Linking flags
 LDFLAGS :=
 LDFLAGS_OPENMP := -openmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
-# start with blank LIBS
+# Start with a blank LIBS
 LIBS =
 
 # Get compile flags based on target macros.
@@ -173,7 +182,7 @@ FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
 LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
-LIBS := $(shell nc-config --flibs) $(shell pkg-config --libs mpich2-f90)
+LIBS += $(shell nf-config --flibs) $(shell pkg-config --libs mpich2-f90)
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
@@ -196,7 +205,6 @@ LDFLAGS += $(LIBS)
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.mod *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x

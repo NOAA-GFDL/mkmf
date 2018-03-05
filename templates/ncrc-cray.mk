@@ -1,91 +1,184 @@
-# template for the Cray CCE compiler on a Cray System
-# typical use with mkmf
+# Template for the Cray CCE compiler on a Cray System
+#
+# Typical use with mkmf
 # mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+
 ############
-# commands #
+# Commands Macros
 ############
 FC = ftn
 CC = cc
 LD = ftn $(MAIN_PROGRAM)
-#########
-# flags #
-#########
-DEBUG =
-REPRO =
-VERBOSE =
-OPENMP =
 
-##############################################
-# Need to use at least GNU Make version 3.81 #
-##############################################
+#######################
+# Build target macros
+#
+# Macros that modify compiler flags used in the build.  Target
+# macrose are usually set on the call to make:
+#
+#    make REPRO=on NETCDF=3
+#
+# Most target macros are activated when their value is non-blank.
+# Some have a single value that is checked.  Others will use the
+# value of the macro in the compile command.
+
+DEBUG =              # If non-blank, perform a debug build (Cannot be
+                     # mixed with REPRO or TEST)
+
+REPRO =              # If non-blank, erform a build that guarentees
+                     # reprodicuibilty from run to run.  Cannot be used
+                     # with DEBUG or TEST
+
+TEST  =              # If non-blank, use the compiler options defined in
+                     # the FFLAGS_TEST and CFLAGS_TEST macros.  Cannot be
+                     # use with REPRO or DEBUG
+
+VERBOSE =            # If non-blank, add additional verbosity compiler
+                     # options
+
+OPENMP =             # If non-blank, compile with openmp enabled
+
+NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
+                     # compiler option.  Default behavior is to compile
+                     # with -qoverride-limits.
+
+NETCDF =             # If value is '3' and CPPDEFS contains
+                     # '-Duse_netCDF', then the additional cpp macro
+                     # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
+
+INCLUDES =           # A list of -I Include directories to be added to the
+                     # the compile command.
+
+SSE = -msse2         # The SSE options to be used to compile.  If blank,
+                     # than use the default SSE settings for the host.
+                     # Current default is to use SSE2.
+
+COVERAGE =           # Add the code coverage compile options.
+
+# Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
 ifneq ($(need),$(ok))
 $(error Need at least make version $(need).  Load module gmake/3.81)
 endif
 
-#################################################################
-# site-dependent definitions, set by environment                #
-#################################################################
+# REPRO, DEBUG and TEST need to be mutually exclusive of each other.
+# Make sure the user hasn't supplied two at the same time
+ifdef REPRO
+ifneq ($(DEBUG),)
+$(error Options REPRO and DEBUG cannot be used together)
+else ifneq ($(TEST),)
+$(error Options REPRO and TEST cannot be used together)
+endif
+else ifdef DEBUG
+ifneq ($(TEST),)
+$(error Options DEBUG and TEST cannot be used together)
+endif
+endif
 
-NETCDF_ROOT = $(CRAY_NETCDF_DIR)/netcdf-cce
-MPI_ROOT    = $(MPICH_DIR)
-INCLUDE = -I$(NETCDF_ROOT)/include
+MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
+# Macro for Fortran preprocessor
 FPPFLAGS = $(INCLUDE)
+
+# Base set of Fortran compiler flags
 FFLAGS = -s real64 -s integer32 -h byteswapio -h nosecond_underscore -e m -h keepfiles -e0 -ez
+
+# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -O fp2 -G2
-FFLAGS_DEBUG = -g -R bc
 FFLAGS_REPRO = -O2 -O fp2 -G2
+FFLAGS_DEBUG = -g -R bc
+
+# Flags to add additional build options
 FFLAGS_OPENMP = -h omp
 FFLAGS_VERBOSE = -e o -v
+FFLAGS_COVERAGE =
 
+# Macro for C preprocessor
 CPPFLAGS = $(INCLUDE)
+
+# Base set of C compiler flags
+CFLAGS =
+
+# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
+CFLAGS_REPRO = -O2
 CFLAGS_DEBUG = -g
+
+# Flags to add additional build options
 CFLAGS_OPENMP = -h omp
 CFLAGS_VERBOSE = -v -h display_opt
+CFLAGS_COVERAGE =
 
-# pathscale wants main program outside libraries, do
-# setenv MAIN_PROGRAM coupler_main.o or something before make
+# Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
+# *_TEST will match the production if no new option(s) is(are) to be tested.
+FFLAGS_TEST = $(FFLAGS_OPT)
+CFLAGS_TEST = $(CFLAGS_OPT)
+
+# Linking flags
 LDFLAGS := -h byteswapio
+LDFLAGS_OPENMP :=
 LDFLAGS_VERBOSE := -v
+LDFLAGS_COVERAGE :=
 
-MAKEFLAGS +=--jobs=2
+# Start with a blank LIBS
+LIBS =
 
-ifneq ($(REPRO),)
+# Get compile flags based on target macros.
+ifdef REPRO
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
-else ifneq ($(DEBUG),)
+else ifdef DEBUG
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
+else ifdef TEST
+CFLAGS += $(CFLAGS_TEST)
+FFLAGS += $(FFLAGS_TEST)
 else
-FFLAGS += $(FFLAGS_OPT)
 CFLAGS += $(CFLAGS_OPT)
+FFLAGS += $(FFLAGS_OPT)
 endif
 
-ifneq ($(OPENMP),)
+ifneq OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
+LDFLAGS += $(LDFLAGS_OPENMP)
 endif
 
-ifneq ($(VERBOSE),)
+ifdef SSE
+CFLAGS += $(SSE)
+FFLAGS += $(SSE)
+endif
+
+ifdef NO_OVERRIDE_LIMITS
+FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
+endif
+
+ifdef VERBOSE
 CFLAGS += $(CFLAGS_VERBOSE)
 FFLAGS += $(FFLAGS_VERBOSE)
 LDFLAGS += $(LDFLAGS_VERBOSE)
 endif
 
-# add LIBS at the end
-LIBS := -L$(NETCDF_ROOT)/lib
 ifeq ($(NETCDF),3)
-# add the use_LARGEFILE cppdef
-ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
-CPPDEFS += -Duse_LARGEFILE
-endif
-LIBS += -lnetcdf
+  # add the use_LARGEFILE cppdef
+  ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
+    CPPDEFS += -Duse_LARGEFILE
+  endif
+	LIBS += -lnetcdf
 else
-LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
+	LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
+
+ifdef COVERAGE
+ifdef BUILDROOT
+PROF_DIR=-prof-dir=$(BUILDROOT)
+endif
+CFLAGS += $(CFLAGS_COVERAGE) $(PROF_DIR)
+FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
+LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
+endif
+
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
@@ -108,7 +201,6 @@ LDFLAGS += $(LIBS)
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.mod *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x
