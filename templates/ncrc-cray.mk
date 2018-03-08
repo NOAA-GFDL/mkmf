@@ -1,4 +1,4 @@
-# Template for the Cray CCE compiler on a Cray System
+# Template for the Cray CCE Compilers on a Cray System
 #
 # Typical use with mkmf
 # mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
@@ -49,7 +49,7 @@ NETCDF =             # If value is '3' and CPPDEFS contains
 INCLUDES =           # A list of -I Include directories to be added to the
                      # the compile command.
 
-SSE = -msse2         # The SSE options to be used to compile.  If blank,
+SSE =                # The SSE options to be used to compile.  If blank,
                      # than use the default SSE settings for the host.
                      # Current default is to use SSE2.
 
@@ -79,10 +79,10 @@ endif
 MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
 # Macro for Fortran preprocessor
-FPPFLAGS = $(INCLUDE)
+FPPFLAGS = $(INCLUDES)
 
 # Base set of Fortran compiler flags
-FFLAGS = -s real64 -s integer32 -h byteswapio -h nosecond_underscore -e m -h keepfiles -e0 -ez
+FFLAGS = -s real64 -s integer32 -h byteswapio -h nosecond_underscore -e m -h keepfiles -e0 -ez -N1023
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -O fp2 -G2
@@ -95,7 +95,7 @@ FFLAGS_VERBOSE = -e o -v
 FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
-CPPFLAGS = $(INCLUDE)
+CPPFLAGS = $(INCLUDES)
 
 # Base set of C compiler flags
 CFLAGS =

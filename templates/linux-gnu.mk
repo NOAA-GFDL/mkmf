@@ -1,4 +1,4 @@
-# Template for the GNU fortran compiler on Linux systems
+# Template for the GNU Compiler Collection on Linux systems
 #
 # Typical use with mkmf
 # mkmf -t linux-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
@@ -80,13 +80,13 @@ MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
+# Fortran Compiler flags for the NetCDF library
+FPPFLAGS += $(shell nf-config --fflags)
+# Fortran Compiler flags for the MPICH MPI library
+FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 
 # Base set of Fortran compiler flags
 FFLAGS := -fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check
-# Fortran Compiler flags for the NetCDF library
-FFLAGS += $(shell nf-config --fflags)
-# Fortran Compiler flags for the MPICH MPI library
-FFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3
@@ -98,12 +98,15 @@ FFLAGS_OPENMP = -fopenmp
 FFLAGS_VERBOSE =
 FFLAGS_COVERAGE =
 
+# Macro for C preprocessor
+CPPFLAGS = $(INCLUDES)
+# C Compiler flags for the NetCDF library
+CPPFLAGS += $(shell nc-config --cflags)
+# C Compiler flags for the MPICH MPI library
+CPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
+
 # Base set of C compiler flags
 CFLAGS := -D__IFC
-# C Compiler flags for the NetCDF library
-CFLAGS += $(shell nc-config --cflags)
-# C Compiler flags for the MPICH MPI library
-CFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
@@ -128,6 +131,10 @@ LDFLAGS_COVERAGE :=
 
 # Start with a blank LIBS
 LIBS =
+# NetCDF library flags
+LIBS += $(shell nf-config --flibs)
+# MPICH MPI library flags
+$(shell pkg-config --libs mpich2-f90)
 
 # Get compile flags based on target macros.
 ifdef REPRO
@@ -181,7 +188,6 @@ FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
 LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
-LIBS += $(shell nf-config --flibs) $(shell pkg-config --libs mpich2-f90)
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
