@@ -81,17 +81,22 @@ my @inc_suffixes = ( q/\.H/, q/\.fh/, q/\.h/, q/\.inc/, q/\.h90/ );
 # suffixes for the target (mkmf -p): if isn't on the list below it's a program
 my @tgt_suffixes = ( q/\.a/ );
 
-my %compile_cmd = (                     # command to create .o file from a given source file suffix
-      q/.F/   => q/$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
-      q/.F90/ => q/$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
-      q/.c/   => q/$(CC) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CFLAGS) -c/,
-      q/.C/   => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CFLAGS) -c/,
-      q/.cc/  => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CPPFLAGS) -c/,
-      q/.cp/  => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CPPFLAGS) -c/,
-      q/.cxx/ => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CPPFLAGS) -c/,
-      q/.c++/ => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CPPFLAGS) -c/,
+my %compile_cmd = ( # commands to create .o file from a given source file suffix
+      # Fix formed Fortran files
+      q/.F/   => q/$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
       q/.f/   => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
-      q/.f90/ => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/              );
+      # Free formed Fortran files
+      q/.F90/ => q/$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
+      q/.f90/ => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
+      # C files
+      q/.c/   => q/$(CC) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CFLAGS) -c/,
+      # C++ files
+      q/.C/   => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CXXFLAGS) $(OTHERFLAGS) $(OTHER_CXXFLAGS) -c/,
+      q/.cc/  => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CXXFLAGS) $(OTHERFLAGS) $(OTHER_CXXFLAGS) -c/,
+      q/.cpp/ => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CXXFLAGS) $(OTHERFLAGS) $(OTHER_CXXFLAGS) -c/,
+      q/.cxx/ => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CXXFLAGS) $(OTHERFLAGS) $(OTHER_CXXFLAGS) -c/,
+      q/.c++/ => q/$(CXX) $(CPPDEFS) $(CPPFLAGS) $(CXXFLAGS) $(OTHERFLAGS) $(OTHER_CXXFLAGS) -c/,
+      );
 my %delim_match = ( q/'/ => q/'/,       # hash to find includefile delimiter pair
                     q/"/ => q/"/,
                     q/</ => q/>/ );
