@@ -81,11 +81,11 @@ MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 # Macro for Fortran preprocessor
 FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
-FFPPLAGS += $(shell nf-config --fflags)
+FPPFLAGS += $(shell nf-config --fflags)
 # Fortran Compiler flags for the HDF5 library
 # NESCC system's HDF5 modulefiles set $HDF5 to the root directory of the HDF5
 # development libraries
-FFPPLAGS += -I$(HDF5)/include
+FPPFLAGS += -I$(HDF5)/include
 
 # Base set of Fortran compiler flags
 FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback
@@ -155,7 +155,7 @@ CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
 endif
 
-ifneq OPENMP
+ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
