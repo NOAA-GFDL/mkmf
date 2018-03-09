@@ -88,6 +88,8 @@ MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
 # Macro for Fortran preprocessor
 FPPFLAGS = $(INCLUDES)
+# Fortran Compiler flags for the NetCDF library
+FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
 FFLAGS = -i4 -r8 -byteswapio -Mcray=pointer -Mcray=pointer -Mflushz -Mdaz -D_F2000
@@ -104,6 +106,8 @@ FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
 CPPFLAGS = $(INCLUDES)
+# C Compiler flags for the NetCDF library
+CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
 CFLAGS =
