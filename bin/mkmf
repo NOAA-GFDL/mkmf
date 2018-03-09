@@ -38,7 +38,7 @@ sub ensureTrailingSlash {
    local $/ = '/'; chomp @_[0]; @_[0] .= '/';
 }
 
-my $version = '19.2.0';
+my $version = '19.3.0';
 
 # initialize variables: use getopts for these
 GetOptions("abspath|a=s" => \$opt_a,
