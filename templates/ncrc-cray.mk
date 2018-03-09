@@ -90,7 +90,7 @@ FFLAGS_REPRO = -O2 -O fp2 -G2
 FFLAGS_DEBUG = -g -R bc
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -h omp
+FFLAGS_NOOPENMP = -h noomp
 FFLAGS_VERBOSE = -e o -v
 FFLAGS_COVERAGE =
 
@@ -106,7 +106,7 @@ CFLAGS_REPRO = -O2
 CFLAGS_DEBUG = -g
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -h omp
+CFLAGS_NOOPENMP = -h noomp
 CFLAGS_VERBOSE = -v -h display_opt
 CFLAGS_COVERAGE =
 
@@ -117,7 +117,7 @@ CFLAGS_TEST = $(CFLAGS_OPT)
 
 # Linking flags
 LDFLAGS := -h byteswapio
-LDFLAGS_OPENMP :=
+LDFLAGS_NOOPENMP :=
 LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
@@ -139,10 +139,10 @@ CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
 endif
 
-ifdef OPENMP
-CFLAGS += $(CFLAGS_OPENMP)
-FFLAGS += $(FFLAGS_OPENMP)
-LDFLAGS += $(LDFLAGS_OPENMP)
+ifndef OPENMP
+CFLAGS += $(CFLAGS_NOOPENMP)
+FFLAGS += $(FFLAGS_NOOPENMP)
+LDFLAGS += $(LDFLAGS_NOOPENMP)
 endif
 
 ifdef SSE
@@ -165,9 +165,6 @@ ifeq ($(NETCDF),3)
   ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
     CPPDEFS += -Duse_LARGEFILE
   endif
-	LIBS += -lnetcdf
-else
-	LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
 ifdef COVERAGE
