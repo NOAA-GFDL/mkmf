@@ -84,10 +84,10 @@ my @tgt_suffixes = ( q/\.a/ );
 my %compile_cmd = ( # commands to create .o file from a given source file suffix
       # Fix formed Fortran files
       q/.F/   => q/$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
-      q/.f/   => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
+      q/.f/   => q/$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
       # Free formed Fortran files
       q/.F90/ => q/$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
-      q/.f90/ => q/$(FC) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
+      q/.f90/ => q/$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c/,
       # C files
       q/.c/   => q/$(CC) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) $(OTHER_CFLAGS) -c/,
       # C++ files
