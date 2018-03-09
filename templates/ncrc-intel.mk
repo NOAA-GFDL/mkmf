@@ -92,7 +92,7 @@ FFLAGS_REPRO = -O2 -debug minimal -fp-model source
 FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -openmp
+FFLAGS_OPENMP = -qopenmp
 FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
 FFLAGS_VERBOSE = -v -V -what -warn all
 FFLAGS_COVERAGE = -prof-gen=srcpos
@@ -111,7 +111,7 @@ CFLAGS_REPRO = -O2 -debug minimal
 CFLAGS_DEBUG = -O0 -g -ftrapuv
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -openmp
+CFLAGS_OPENMP = -qopenmp
 CFLAGS_VERBOSE = -w3
 CFLAGS_COVERAGE = -prof-gen=srcpos
 
@@ -122,7 +122,7 @@ CFLAGS_TEST = $(CFLAGS_OPT)
 
 # Linking flags
 LDFLAGS :=
-LDFLAGS_OPENMP := -openmp
+LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
@@ -170,9 +170,6 @@ ifeq ($(NETCDF),3)
   ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
     CPPDEFS += -Duse_LARGEFILE
   endif
-	LIBS += -lnetcdf
-else
-	LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
 ifdef COVERAGE

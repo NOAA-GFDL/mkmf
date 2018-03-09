@@ -96,7 +96,7 @@ FFLAGS_REPRO = -O2 -debug minimal -fp-model source
 FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -openmp
+FFLAGS_OPENMP = -qopenmp
 FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
 FFLAGS_VERBOSE = -v -V -what
 FFLAGS_COVERAGE = -prof-gen=srcpos
@@ -119,13 +119,13 @@ CFLAGS_REPRO = -O2 -debug minimal
 CFLAGS_DEBUG = -O0 -g -ftrapuv
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -openmp
+CFLAGS_OPENMP = -qopenmp
 CFLAGS_VERBOSE = -w3
 CFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Linking flags
 LDFLAGS :=
-LDFLAGS_OPENMP := -openmp
+LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 

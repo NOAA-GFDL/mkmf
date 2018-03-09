@@ -177,9 +177,6 @@ ifeq ($(NETCDF),3)
   ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
     CPPDEFS += -Duse_LARGEFILE
   endif
-	LIBS += -lnetcdf
-else
-	LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
 ifdef COVERAGE
