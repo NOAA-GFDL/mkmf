@@ -73,7 +73,7 @@ do
             findDocFiles=true
             ;;
         l)
-            followSimLinks="-L"
+            followSymLinks="-L"
             ;;
         h)
             help
