@@ -10,8 +10,10 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:duggan/bats'
     packages:
       - gfortran
+      - bats
 
 script:
-  - for f in t/*.sh; do echo ${f} && ${f}; done
+  - prove -v t/t*-*.sh 
