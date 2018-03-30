@@ -83,7 +83,7 @@ FPPFLAGS := $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
 FPPFLAGS += $(shell nf-config --fflags)
 # Fortran Compiler flags for the MPICH MPI library
-FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
+FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2)
 
 # Base set of Fortran compiler flags
 FFLAGS := -fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check
@@ -103,7 +103,7 @@ CPPFLAGS = $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 # C Compiler flags for the MPICH MPI library
-CPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
+CPPFLAGS += $(shell pkg-config --cflags-only-I mpich2)
 
 # Base set of C compiler flags
 CFLAGS := -D__IFC
