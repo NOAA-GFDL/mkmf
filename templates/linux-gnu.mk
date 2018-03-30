@@ -134,7 +134,7 @@ LIBS =
 # NetCDF library flags
 LIBS += $(shell nf-config --flibs)
 # MPICH MPI library flags
-$(shell pkg-config --libs mpich2-f90)
+LIBS += $(shell pkg-config --libs mpich2-f90)
 
 # Get compile flags based on target macros.
 ifdef REPRO
