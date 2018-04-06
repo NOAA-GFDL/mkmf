@@ -1,0 +1,19 @@
+# Travis-CI coniguration for basic testing of mkmf and list_paths
+
+# Using the c-language, b/c we need most of what that configuration
+# gives
+language: c
+dist: trusty
+sudo: false
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:duggan/bats'
+    packages:
+      - gfortran
+      - bats
+
+script:
+  - prove -v t/t*-*.sh 
