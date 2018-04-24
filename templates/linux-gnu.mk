@@ -146,6 +146,9 @@ FFLAGS += $(FFLAGS_DEBUG)
 else ifdef TEST
 CFLAGS += $(CFLAGS_TEST)
 FFLAGS += $(FFLAGS_TEST)
+else ifneq ($(COVERAGE),)
+FFLAGS += --coverage
+LDFLAGS += --coverage
 else
 CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
