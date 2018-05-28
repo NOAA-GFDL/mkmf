@@ -1,14 +1,13 @@
-# Template for the GNU Compiler Collection on Linux systems
+# Template for the GNU Compiler Collection on Trusty version of Ubuntu Linux systems (used by Travis-CI)
 #
 # Typical use with mkmf
-# mkmf -t linux-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t linux-ubuntu-trusty-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 
 ############
 # Commands Macors
-FC = gfortran
-CC = gcc
-CXX = g++
-LD = gfortran $(MAIN_PROGRAM)
+FC = mpif90
+CC = mpicc
+LD = mpif90 $(MAIN_PROGRAM)
 
 #######################
 # Build target macros
@@ -81,9 +80,7 @@ MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
-FPPFLAGS += $(shell nf-config --fflags)
-# Fortran Compiler flags for the MPICH MPI library
-FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2)
+FPPFLAGS += $(shell nc-config --fflags)
 
 # Base set of Fortran compiler flags
 FFLAGS := -fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check
@@ -102,8 +99,6 @@ FFLAGS_COVERAGE =
 CPPFLAGS = $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
-# C Compiler flags for the MPICH MPI library
-CPPFLAGS += $(shell pkg-config --cflags-only-I mpich2)
 
 # Base set of C compiler flags
 CFLAGS := -D__IFC
@@ -132,9 +127,7 @@ LDFLAGS_COVERAGE :=
 # Start with a blank LIBS
 LIBS =
 # NetCDF library flags
-LIBS += $(shell nf-config --flibs)
-# MPICH MPI library flags
-LIBS += $(shell pkg-config --libs mpich2-f90)
+LIBS += $(shell nc-config --flibs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
