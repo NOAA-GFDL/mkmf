@@ -44,6 +44,13 @@ teardown() {
    [ "$(wc -l < path_names)" -eq 8 ]
 }
 
+@test "list_paths find specific files in t or test_* directories" {
+   run list_paths ${BATS_TEST_DIRNAME}/src ${BATS_TEST_DIRNAME}/src/t/file7.F90
+   [ "$status" -eq 0 ]
+   [ -e path_names ]
+   [ "$(wc -l < path_names)" -eq 7 ]
+}
+
 @test "list_paths with specified out file" {
    outFileName=$(mktemp -u output.XXXXXXXX)
    run list_paths -o ${outFileName} ${BATS_TEST_DIRNAME}/src
