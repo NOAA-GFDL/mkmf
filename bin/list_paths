@@ -65,7 +65,7 @@ outFile=path_names
 verbose=0
 findDocFiles=false
 followSymLinks=""
-includeTestDirs=false
+noIncludeTestDirs="-type d \( -name test_\* -o -name t \) -prune -o"
 
 while getopts :dhlo:tvV OPT
 do
@@ -84,7 +84,7 @@ do
             outFile=${OPTARG}
             ;;
         t)
-            includeTestDirs=true
+            noIncludeTestDirs=""
             ;;
         v)
             : $((verbose+=1))
@@ -136,25 +136,20 @@ then
     echo "Temporary output file ${outTmp}." >&2
 fi
 
-find ${followSymLinks} $* -type f \
-     \( -name \*.c   \
-     -o -name \*.C   \
-     -o -name \*.f   \
-     -o -name \*.fh  \
-     -o -name \*.F   \
-     -o -name \*.f90 \
-     -o -name \*.F90 \
-     -o -name \*.h   \
-     -o -name \*.H   \
-     -o -name \*.inc \
-     \) -print >> ${outTmp}
-
-if [ "${includeTestDirs}" = "false" ]
-then
-    # Ignore files in directories with the name "t" or "test_*"
-    sed  -i -e '/\/test_.*\//d' \
-            -e '/\/t\//d' ${outTmp}
-fi
+eval "find ${followSymLinks} $* \
+           ${noIncludeTestDirs} \
+           -type f \
+           \( -name \*.c   \
+           -o -name \*.C   \
+           -o -name \*.f   \
+           -o -name \*.fh  \
+           -o -name \*.F   \
+           -o -name \*.f90 \
+           -o -name \*.F90 \
+           -o -name \*.h   \
+           -o -name \*.H   \
+           -o -name \*.inc \
+           \) -print" >> ${outTmp}
 
 sed 's:.*/\(.*\):& \1:' ${outTmp} | nl | sort --key 3 -u | sort -n | awk '{print $2}' > ${outFile}
 
@@ -171,17 +166,19 @@ then
     outDocFile=${outFile}.html
 
     #touch $doc # create the file if it doesn't exist
-    find ${followSymLinks} $* -type f \
-         \( -name \*.html \
-         -o -name \*.ps   \
-         -o -name \*.txt  \
-         -o -name \*.pdf  \
-         -o -name \*.jpg  \
-         -o -name \*.md   \
-         -o -name readme  \
-         -o -name read_me \
-         -o -name README  \
-         \) -print > $outTmp
+    eval "find ${followSymLinks} $* \
+               ${noIncludeTestDirs} \
+               -type f \
+               \( -name \*.html \
+               -o -name \*.ps   \
+               -o -name \*.txt  \
+               -o -name \*.pdf  \
+               -o -name \*.jpg  \
+               -o -name \*.md   \
+               -o -name readme  \
+               -o -name read_me \
+               -o -name README  \
+               \) -print" > $outTmp
 
     # Only create the
     if [ -s ${outTmp} ]

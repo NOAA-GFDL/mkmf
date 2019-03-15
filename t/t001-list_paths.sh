@@ -15,9 +15,9 @@ teardown() {
 
 @test "list_paths prints version" {
    run list_paths -V
-   echo $output
    [ "$status" -eq 0 ]
    [[ "$output" =~ ^list_paths\ [0-9]+\.[0-9]+$ ]]
+   echo $output
 }
 
 @test "list_paths requires at least one argument" {
@@ -26,7 +26,8 @@ teardown() {
 }
 
 @test "list_paths using default out file" {
-   run list_paths ${BATS_TEST_DIRNAME}/src
+   run list_paths -v ${BATS_TEST_DIRNAME}/src
+   [ "$status" -eq 0 ]
    [ -e path_names ]
    [ "$(wc -l < path_names)" -eq 6 ]
 }
@@ -36,15 +37,24 @@ teardown() {
    [ "$status" -eq 0 ]
 }
 
+@test "list_paths find files in t and test_* directories" {
+   run list_paths -t ${BATS_TEST_DIRNAME}/src
+   [ "$status" -eq 0 ]
+   [ -e path_names ]
+   [ "$(wc -l < path_names)" -eq 8 ]
+}
+
 @test "list_paths with specified out file" {
    outFileName=$(mktemp -u output.XXXXXXXX)
    run list_paths -o ${outFileName} ${BATS_TEST_DIRNAME}/src
+   [ "$status" -eq 0 ]
    [ -e ${outFileName} ]
-   [ "$(wc -l < $outFileName)" -eq 6 ]
+   [ "$(wc -l < $outFileName)" = "6" ]
 }
 
 @test "list_paths finds html files" {
    run list_paths -d ${BATS_TEST_DIRNAME}/src
+   [ "$status" -eq 0 ]
    [ -e path_names ]
    [ -e path_names.html ]
    [ "$(wc -l < path_names.html)" -eq 5 ]
@@ -52,6 +62,7 @@ teardown() {
 
 @test "list_paths find symlinks" {
    run list_paths -l ${BATS_TEST_DIRNAME}/src
+   [ "$status" -eq 0 ]
    [ -e path_names ]
    [ "$(wc -l < path_names)" -eq 7 ]
 }
