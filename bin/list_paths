@@ -58,7 +58,7 @@ help () {
 BIN_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 
 # Version
-VERSION="2.0"
+VERSION="2.1"
 
 # Default settings, can be changed by options
 outFile=path_names
