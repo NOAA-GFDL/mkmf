@@ -65,8 +65,9 @@ outFile=path_names
 verbose=0
 findDocFiles=false
 followSymLinks=""
+includeTestDirs=false
 
-while getopts :dhlo:vV OPT
+while getopts :dhlo:tvV OPT
 do
     case "$OPT" in
         d)
@@ -81,6 +82,9 @@ do
             ;;
         o)
             outFile=${OPTARG}
+            ;;
+        t)
+            includeTestDirs=true
             ;;
         v)
             : $((verbose+=1))
@@ -144,6 +148,13 @@ find ${followSymLinks} $* -type f \
      -o -name \*.H   \
      -o -name \*.inc \
      \) -print >> ${outTmp}
+
+if [ "${includeTestDirs}" = "false" ]
+then
+    # Ignore files in directories with the name "t" or "test_*"
+    sed  -i -e '/\/test_.*\//d' \
+            -e '/\/t\//d' ${outTmp}
+fi
 
 sed 's:.*/\(.*\):& \1:' ${outTmp} | nl | sort --key 3 -u | sort -n | awk '{print $2}' > ${outFile}
 
