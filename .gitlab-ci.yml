@@ -1,0 +1,5 @@
+test:
+  tags:
+    - linux
+  script:
+    - prove -v t/t*-*.sh 
