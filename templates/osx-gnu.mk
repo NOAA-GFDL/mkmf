@@ -4,7 +4,7 @@
 # mkmf -t osx-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 
 ############
-# Commands Macors
+# Commands Macros
 FC = mpif90
 CC = mpicc
 CXX = mpicxx
@@ -76,10 +76,17 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
+# Get number of CPUs
 MAKEFLAGS += --jobs=$(shell sysctl -n hw.ncpu)
 
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
+
+# Add -D__APPLE__ for Fortran if on OSX (i.e. Darwin)
+ifeq ($(shell uname -s),Darwin)
+FPPFLAGS += -D__APPLE__
+endif
+
 # Fortran Compiler flags for the NetCDF library
 FPPFLAGS += $(shell nf-config --fflags)
 
