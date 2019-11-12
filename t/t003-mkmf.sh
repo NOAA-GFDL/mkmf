@@ -112,7 +112,7 @@ teardown() {
    run mkmf -g
    [ "$status" -eq 0 ]
    [ -e Makefile ]
-   regexString='^CPPDEFS =  -D_FILE_VERSION="`git-version-string $<`"$'
+   regexString='^CPPDEFS =  -D_FILE_VERSION=\\"`git-version-string $<`\\"$'
    run grep -q "${regexString}" Makefile
    [ "$status" -eq 0 ]
 }
