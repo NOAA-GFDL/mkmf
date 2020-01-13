@@ -85,6 +85,11 @@ endif
 #MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 MAKEFLAGS += --jobs=$(shell sysctl -n hw.ncpu)
 
+# Required Preprocessor Macros:
+CPPDEFS += -Duse_netCDF
+
+# Additional Preprocessor Macros needed due to  Autotools and CMake
+
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
 # Add -D__APPLE__ for Fortran if on OSX (i.e. Darwin)

@@ -78,6 +78,12 @@ endif
 
 MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
+# Required Preprocessor Macros:
+CPPDEFS += -Duse_netCDF
+
+# Additional Preprocessor Macros needed due to  Autotools and CMake
+CPPDEFS += -DHAVE_GETTID -DHAVE_SCHED_GETAFFINITY
+
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
@@ -99,7 +105,7 @@ FFLAGS_VERBOSE =
 FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
-CPPFLAGS = $(INCLUDES)
+CPPFLAGS := $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 # C Compiler flags for the MPICH MPI library
@@ -120,8 +126,8 @@ CFLAGS_COVERAGE =
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = $(FFLAGS_OPT)
-CFLAGS_TEST = $(CFLAGS_OPT)
+FFLAGS_TEST := $(FFLAGS_OPT)
+CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
 LDFLAGS :=

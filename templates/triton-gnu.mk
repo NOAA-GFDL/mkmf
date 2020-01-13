@@ -17,6 +17,12 @@ OPENMP =
 
 MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
+# Required Preprocessor Macros:
+CPPDEFS += -Duse_netCDF
+
+# Additional Preprocessor Macros needed due to  Autotools and CMake
+CPPDEFS += -DHAVE_GETTID -DHAVE_SCHED_GETAFFINITY
+
 FPPFLAGS :=
 
 FFLAGS :=-fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check

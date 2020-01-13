@@ -79,6 +79,11 @@ endif
 # Get number of CPUs
 MAKEFLAGS += --jobs=$(shell sysctl -n hw.ncpu)
 
+# Required Preprocessor Macros:
+CPPDEFS += -Duse_netCDF
+
+# Additional Preprocessor Macros needed due to  Autotools and CMake
+
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
 

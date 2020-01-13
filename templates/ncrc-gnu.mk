@@ -38,20 +38,12 @@ VERBOSE =            # If non-blank, add additional verbosity compiler
 
 OPENMP =             # If non-blank, compile with openmp enabled
 
-NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
-                     # compiler option.  Default behavior is to compile
-                     # with -qoverride-limits.
-
 NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
 
 INCLUDES =           # A list of -I Include directories to be added to the
                      # the compile command.
-
-SSE =                # The SSE options to be used to compile.  If blank,
-                     # than use the default SSE settings for the host.
-                     # Current default is to use SSE2.
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -78,8 +70,14 @@ endif
 
 MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
+# Required Preprocessor Macros:
+CPPDEFS += -Duse_netCDF -Duse_libMPI
+
+# Additional Preprocessor Macros needed due to  Autotools and CMake
+CPPDEFS += -DHAVE_GETTID -DHAVE_SCHED_GETAFFINITY
+
 # Macro for Fortran preprocessor
-FPPFLAGS = $(INCLUDES)
+FPPFLAGS := $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
 FPPFLAGS += $(shell nf-config --fflags)
 
@@ -97,7 +95,7 @@ FFLAGS_VERBOSE = -Wall -Wextra
 FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
-CPPFLAGS = -D__IFC $(INCLUDES)
+CPPFLAGS := -D__IFC $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 
@@ -116,8 +114,8 @@ CFLAGS_COVERAGE =
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = $(FFLAGS_OPT)
-CFLAGS_TEST = $(CFLAGS_OPT)
+FFLAGS_TEST := $(FFLAGS_OPT)
+CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
 LDFLAGS :=
@@ -149,15 +147,6 @@ FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
 endif
 
-ifdef SSE
-CFLAGS += $(SSE)
-FFLAGS += $(SSE)
-endif
-
-ifdef NO_OVERRIDE_LIMITS
-FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
-endif
-
 ifdef VERBOSE
 CFLAGS += $(CFLAGS_VERBOSE)
 FFLAGS += $(FFLAGS_VERBOSE)
@@ -166,9 +155,7 @@ endif
 
 ifeq ($(NETCDF),3)
   # add the use_LARGEFILE cppdef
-  ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
-    CPPDEFS += -Duse_LARGEFILE
-  endif
+  CPPDEFS += -Duse_LARGEFILE
 endif
 
 ifdef COVERAGE
