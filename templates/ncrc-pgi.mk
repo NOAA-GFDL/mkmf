@@ -177,6 +177,8 @@ FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
 LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
+These Algebra libraries Add solution to more complex vector matrix model equations
+LIBS += -llapack -lblas
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
