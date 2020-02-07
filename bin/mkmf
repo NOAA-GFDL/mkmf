@@ -38,7 +38,7 @@ sub ensureTrailingSlash {
    local $/ = '/'; chomp @_[0]; @_[0] .= '/';
 }
 
-my $version = '19.3.1';
+my $version = '19.3.0';
 
 # initialize variables: use getopts for these
 GetOptions("abspath|a=s" => \$opt_a,
@@ -142,7 +142,7 @@ if ( $opt_c ) {
 }
 
 if ( $opt_g ) {
-  $opt_c .= ' -D_FILE_VERSION=\"`git-version-string $<`\"';
+  $opt_c .= ' -D_FILE_VERSION="`git-version-string $<`"';
 }
 
 &print_formatted_list("CPPDEFS = $opt_c") if $opt_c;
