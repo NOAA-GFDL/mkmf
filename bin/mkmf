@@ -369,14 +369,20 @@ sub scanfile_for_keywords {
    print "Scanning file $file of object $object ...\n" if $opt_v;
    open FILE, $file or die "\aERROR opening file $file of object $object: $!\n";
    foreach $line ( <FILE> ) {
-      if ( $line =~ /^\s*module\s+(\w*)/ix ) {
+      if ( $line =~ /^\s*module\s+((?!subroutine|function|procedure)\w*)/ix ) {
          if ( $1 ) {
             my $module = lc $1;
-            if ( $obj_of_module{$module} && $module ne "procedure" ) {
+            if ( $obj_of_module{$module} ) {
                die "\a\nAMBIGUOUS: Module $module is associated with $file as well as $actual_source_of{$obj_of_module{$module}}.\n";
             }
             $obj_of_module{$module} = $object;
          }
+      }
+      if ( $line =~ /^\s*submodule\s+\((\s*\w*\s*)\)\s+(\w*)/ix ) {
+         # Submodules depend on the parent module, but not vice versa
+         #   $1: parent module name
+         #   $2: submodule name
+         $modules_used_by{$object} .= ' ' . lc $1 if $1;
       }
       if ( $line =~ /^\s*use\s*(\w*)/ix ) {
          $modules_used_by{$object} .= ' ' . lc $1 if $1;
