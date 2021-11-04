@@ -42,8 +42,9 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
 
-INCLUDES =           # A list of -I Include directories to be added to the
+                     # A list of -I Include directories to be added to the
                      # the compile command.
+INCLUDES = -I/sw/gaea-cle7/uasw/ncrc/envs/20200417/opt/linux-sles15-x86_64/gcc-7.5.0/libyaml-0.2.5-sfyudki4c5n5xusvwxmp3bdd6ra5z3lq/include
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -132,7 +133,9 @@ LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
 # Start with a blank LIBS
-LIBS =
+LIBS :=
+# Add library location for libyaml
+LIBS := -L/sw/gaea-cle7/uasw/ncrc/envs/20200417/opt/linux-sles15-x86_64/gcc-7.5.0/libyaml-0.2.5-sfyudki4c5n5xusvwxmp3bdd6ra5z3lq/lib -lyaml
 
 # Get compile flags based on target macros.
 ifdef REPRO
