@@ -48,7 +48,7 @@ NETCDF =             # If value is '3' and CPPDEFS contains
 
                      # A list of -I Include directories to be added to the
                      # the compile command.
-INCLUDES = -I/sw/gaea-cle7/uasw/ncrc/envs/20200417/opt/linux-sles15-x86_64/gcc-7.5.0/libyaml-0.2.5-sfyudki4c5n5xusvwxmp3bdd6ra5z3lq/include
+INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
 ISA = -xsse2         # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.  If blank, than use the default SSE
@@ -133,10 +133,8 @@ LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
-# Start with blank LIBS
-LIBS :=
-# Add library location for libyaml
-LIBS := -L/sw/gaea-cle7/uasw/ncrc/envs/20200417/opt/linux-sles15-x86_64/gcc-7.5.0/libyaml-0.2.5-sfyudki4c5n5xusvwxmp3bdd6ra5z3lq/lib -lyaml
+# List of -L library directories to be added to the compile and linking commands
+LIBS := $(shell pkg-config --libs yaml-0.1)
 
 # Get compile flags based on target macros.
 ifdef REPRO
