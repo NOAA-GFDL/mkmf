@@ -42,8 +42,9 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
 
-INCLUDES =           # A list of -I Include directories to be added to the
+                     # A list of -I Include directories to be added to the
                      # the compile command.
+INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -131,8 +132,8 @@ LDFLAGS_OPENMP :=
 LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
-# Start with a blank LIBS
-LIBS =
+# List of -L library directories to be added to the compile and linking commands
+LIBS := $(shell pkg-config --libs yaml-0.1)
 
 # Get compile flags based on target macros.
 ifdef REPRO

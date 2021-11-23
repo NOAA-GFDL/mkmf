@@ -46,8 +46,9 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
 
-INCLUDES =           # A list of -I Include directories to be added to the
+                     # A list of -I Include directories to be added to the
                      # the compile command.
+INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
 ISA = -xsse2         # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.  If blank, than use the default SSE
@@ -132,8 +133,8 @@ LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
-# Start with blank LIBS
-LIBS :=
+# List of -L library directories to be added to the compile and linking commands
+LIBS := $(shell pkg-config --libs yaml-0.1)
 
 # Get compile flags based on target macros.
 ifdef REPRO
