@@ -50,9 +50,10 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # the compile command.
 INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
-ISA = -xsse2         # The Intel Instruction Set Archetecture (ISA) compile
+                     # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.  If blank, than use the default SSE
                      # settings for the host.  Current default is to use SSE2.
+ISA = -march=core-avx2 -qno-opt-dynamic-align
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -91,7 +92,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -traceback
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -debug minimal -fp-model source
@@ -101,7 +102,7 @@ FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -w
 # Flags to add additional build options
 FFLAGS_OPENMP = -qopenmp
 FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
-FFLAGS_VERBOSE = -v -V -what -warn all
+FFLAGS_VERBOSE = -v -V -what -warn all -qopt-report-phase=vec -qopt-report=2
 FFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Macro for C preprocessor
@@ -119,7 +120,7 @@ CFLAGS_DEBUG = -O0 -g -ftrapuv
 
 # Flags to add additional build options
 CFLAGS_OPENMP = -qopenmp
-CFLAGS_VERBOSE = -w3
+CFLAGS_VERBOSE = -w3 -qopt-report-phase=vec -qopt-report=2
 CFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
