@@ -52,7 +52,7 @@ INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
                      # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.
-ISA = -march=core-avx2 -qno-opt-dynamic-align
+ISA = -march=core-avx2
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -91,7 +91,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -qno-opt-dynamic-align
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -debug minimal -fp-model source
