@@ -51,8 +51,7 @@ NETCDF =             # If value is '3' and CPPDEFS contains
 INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
 ISA = -xsse2         # The Intel Instruction Set Archetecture (ISA) compile
-                     # option to use.  If blank, than use the default SSE
-                     # settings for the host.  Current default is to use SSE2.
+                     # option to use.
 
 COVERAGE =           # Add the code coverage compile options.
 
