@@ -52,7 +52,7 @@ INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
                      # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.
-ISA = -march=core-avx2 -qno-opt-dynamic-align
+ISA =
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -93,10 +93,21 @@ FPPFLAGS += $(shell nf-config --fflags)
 # Base set of Fortran compiler flags
 FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback
 
+# Set the ISA (vectorization) as user defined or based on the target
+ifdef ISA
+ISA_OPT = $(ISA)
+ISA_REPRO = $(ISA)
+ISA_DEBUG = $(ISA)
+else
+ISA_OPT = -march=core-avx2 -qno-opt-dynamic-align
+ISA_REPRO = -march=core-avx-i -qno-opt-dynamic-align
+ISA_DEBUG = -march=core-avx-i -qno-opt-dynamic-align
+endif
+
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_OPT = -O3 -debug minimal -fp-model source
-FFLAGS_REPRO = -O2 -debug minimal -fp-model source
-FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv
+FFLAGS_OPT = -O3 -debug minimal -fp-model source $(ISA_OPT)
+FFLAGS_REPRO = -O2 -debug minimal -fp-model source $(ISA_REPRO)
+FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
 FFLAGS_OPENMP = -qopenmp
@@ -113,9 +124,9 @@ CPPFLAGS += $(shell nc-config --cflags)
 CFLAGS := -sox -traceback
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-CFLAGS_OPT = -O2 -debug minimal
-CFLAGS_REPRO = -O2 -debug minimal
-CFLAGS_DEBUG = -O0 -g -ftrapuv
+CFLAGS_OPT = -O2 -debug minimal $(ISA_OPT)
+CFLAGS_REPRO = -O2 -debug minimal $(ISA_REPRO)
+CFLAGS_DEBUG = -O0 -g -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
 CFLAGS_OPENMP = -qopenmp
@@ -155,11 +166,6 @@ ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
-endif
-
-ifdef ISA
-CFLAGS += $(ISA)
-FFLAGS += $(ISA)
 endif
 
 ifdef NO_OVERRIDE_LIMITS
