@@ -77,8 +77,6 @@ else
 NOFMA := -nofma
 endif
 
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 

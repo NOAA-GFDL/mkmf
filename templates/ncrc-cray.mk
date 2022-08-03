@@ -69,8 +69,6 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 

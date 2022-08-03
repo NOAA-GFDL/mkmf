@@ -81,10 +81,6 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
-# Get number of CPUs
-#MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-MAKEFLAGS += --jobs=$(shell sysctl -n hw.ncpu)
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 

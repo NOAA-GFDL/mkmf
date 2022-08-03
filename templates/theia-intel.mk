@@ -76,8 +76,6 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Macro for Fortran preprocessor
 FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
