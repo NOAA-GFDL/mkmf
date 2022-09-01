@@ -15,8 +15,6 @@ REPRO =
 VERBOSE =
 OPENMP =
 
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
@@ -107,7 +105,6 @@ LIBS := $(shell nc-config --flibs)
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.mod *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x

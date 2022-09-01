@@ -1,4 +1,4 @@
-# Template for the GNU Compiler Collection on a Cray System
+# Template for the Cray CCE Compilers on a Cray System
 #
 # Typical use with mkmf
 # mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
@@ -69,8 +69,6 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
@@ -83,34 +81,34 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-real-8 -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check
+FFLAGS = -s real64 -s integer32 -h byteswapio -e m -h keepfiles -e0 -ez -N1023
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_OPT = -O2 -fno-expensive-optimizations
-FFLAGS_REPRO =
-FFLAGS_DEBUG = -O0 -g -W -fbounds-check -ffpe-trap=invalid,zero,overflow
+FFLAGS_OPT = -O3 -O fp2 -G2
+FFLAGS_REPRO = -O2 -O fp2 -G2
+FFLAGS_DEBUG = -g -R bc
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -fopenmp
-FFLAGS_VERBOSE = -Wall -Wextra
+FFLAGS_NOOPENMP = -h noomp
+FFLAGS_VERBOSE = -e o -v
 FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
-CPPFLAGS := -D__IFC $(INCLUDES)
+CPPFLAGS := $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS :=
+CFLAGS =
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
 CFLAGS_REPRO = -O2
-CFLAGS_DEBUG = -O0 -g
+CFLAGS_DEBUG = -g
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -fopenmp
-CFLAGS_VERBOSE = -Wall -Wextra
+CFLAGS_NOOPENMP = -h noomp
+CFLAGS_VERBOSE = -v -h display_opt
 CFLAGS_COVERAGE =
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
@@ -119,9 +117,9 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS :=
-LDFLAGS_OPENMP := -fopenmp
-LDFLAGS_VERBOSE :=
+LDFLAGS := -h byteswapio
+LDFLAGS_NOOPENMP :=
+LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
 # List of -L library directories to be added to the compile and linking commands
@@ -142,10 +140,10 @@ CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
 endif
 
-ifdef OPENMP
-CFLAGS += $(CFLAGS_OPENMP)
-FFLAGS += $(FFLAGS_OPENMP)
-LDFLAGS += $(LDFLAGS_OPENMP)
+ifndef OPENMP
+CFLAGS += $(CFLAGS_NOOPENMP)
+FFLAGS += $(FFLAGS_NOOPENMP)
+LDFLAGS += $(LDFLAGS_NOOPENMP)
 endif
 
 ifdef VERBOSE
@@ -179,18 +177,17 @@ LDFLAGS += $(LIBS)
 # .f, .f90, .F, .F90. Given a sourcefile <file>.<ext>, where <ext> is one of
 # the above, this provides a number of default actions:
 
-# make <file>.opt       create an optimization report
-# make <file>.o         create an object file
-# make <file>.s         create an assembly listing
-# make <file>.x         create an executable file, assuming standalone
-#                       source
-# make <file>.i         create a preprocessed file (for .F)
-# make <file>.i90       create a preprocessed file (for .F90)
+# make <file>.opt	create an optimization report
+# make <file>.o		create an object file
+# make <file>.s		create an assembly listing
+# make <file>.x		create an executable file, assuming standalone
+#			source
+# make <file>.i		create a preprocessed file (for .F)
+# make <file>.i90	create a preprocessed file (for .F90)
 
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.mod *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x

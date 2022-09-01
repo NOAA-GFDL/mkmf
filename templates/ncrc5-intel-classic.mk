@@ -1,4 +1,4 @@
-# Template for the PGI Compilers on a Cray System
+# Template for the Intel Compilers on a Cray System
 #
 # Typical use with mkmf
 # mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
@@ -38,6 +38,10 @@ VERBOSE =            # If non-blank, add additional verbosity compiler
 
 OPENMP =             # If non-blank, compile with openmp enabled
 
+NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
+                     # compiler option.  Default behavior is to compile
+                     # with -qoverride-limits.
+
 NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
@@ -45,6 +49,10 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # A list of -I Include directories to be added to the
                      # the compile command.
 INCLUDES := $(shell pkg-config --cflags yaml-0.1)
+
+                     # The Intel Instruction Set Archetecture (ISA) compile
+                     # option to use.
+ISA =
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -69,16 +77,6 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
-# Check version of PGI for use of -nofma option
-has_nofma := $(shell $(FC) -dryrun -nofma foo.f90 > /dev/null 2>&1; echo $$?)
-ifneq ($(has_nofma),0)
-NOFMA :=
-else
-NOFMA := -nofma
-endif
-
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
@@ -86,40 +84,52 @@ CPPDEFS += -Duse_netCDF
 CPPDEFS += -DHAVE_SCHED_GETAFFINITY
 
 # Macro for Fortran preprocessor
-FPPFLAGS := $(INCLUDES)
+FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS = -i4 -r8 -byteswapio -Mcray=pointer -Mcray=pointer -Mflushz -Mdaz -D_F2000
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback
+
+# Set the ISA (vectorization) as user defined or based on the target
+ifdef ISA
+ISA_OPT = $(ISA)
+ISA_REPRO = $(ISA)
+ISA_DEBUG = $(ISA)
+else
+ISA_OPT = -march=core-avx2 -qno-opt-dynamic-align
+ISA_REPRO = -march=core-avx-i -qno-opt-dynamic-align
+ISA_DEBUG = -march=core-avx-i -qno-opt-dynamic-align
+endif
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
-FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse $(NOFMA)
-FFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
+FFLAGS_OPT = -O3 -debug minimal -fp-model source $(ISA_OPT)
+FFLAGS_REPRO = -O2 -debug minimal -fp-model source $(ISA_REPRO)
+FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -mp
-FFLAGS_VERBOSE = -v -Minform=inform
-FFLAGS_COVERAGE =
+FFLAGS_OPENMP = -qopenmp
+FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
+FFLAGS_VERBOSE = -v -V -what -warn all -qopt-report-phase=vec -qopt-report=2
+FFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Macro for C preprocessor
-CPPFLAGS := $(INCLUDES)
+CPPFLAGS := -D__IFC $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS =
+CFLAGS := -sox -traceback
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-CFLAGS_OPT = -O2
-CFLAGS_REPRO = -O2
-CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
+CFLAGS_OPT = -O2 -debug minimal $(ISA_OPT)
+CFLAGS_REPRO = -O2 -debug minimal $(ISA_REPRO)
+CFLAGS_DEBUG = -O0 -g -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -mp
-CFLAGS_VERBOSE = -v -Minform=inform
-CFLAGS_COVERAGE =
+CFLAGS_OPENMP = -qopenmp
+CFLAGS_VERBOSE = -w3 -qopt-report-phase=vec -qopt-report=2
+CFLAGS_COVERAGE = -prof-gen=srcpos
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
@@ -127,10 +137,10 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS := -byteswapio
-LDFLAGS_OPENMP :=
-LDFLAGS_VERBOSE := -v
-LDFLAGS_COVERAGE :=
+LDFLAGS :=
+LDFLAGS_OPENMP := -qopenmp
+LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
+LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
 LIBS := $(shell pkg-config --libs yaml-0.1)
@@ -156,6 +166,10 @@ FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
 endif
 
+ifdef NO_OVERRIDE_LIMITS
+FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
+endif
+
 ifdef VERBOSE
 CFLAGS += $(CFLAGS_VERBOSE)
 FFLAGS += $(FFLAGS_VERBOSE)
@@ -164,9 +178,7 @@ endif
 
 ifeq ($(NETCDF),3)
   # add the use_LARGEFILE cppdef
-  ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
-    CPPDEFS += -Duse_LARGEFILE
-  endif
+  CPPDEFS += -Duse_LARGEFILE
 endif
 
 ifdef COVERAGE
@@ -178,8 +190,6 @@ FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
 LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
-# These Algebra libraries Add solution to more complex vector matrix model equations
-LIBS += -llapack -lblas
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
@@ -202,7 +212,6 @@ LDFLAGS += $(LIBS)
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.mod *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x

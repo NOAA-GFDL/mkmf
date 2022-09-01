@@ -76,8 +76,6 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
-MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
-
 # Macro for Fortran preprocessor
 FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
@@ -214,7 +212,6 @@ LDFLAGS += $(LIBS)
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.mod *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x
