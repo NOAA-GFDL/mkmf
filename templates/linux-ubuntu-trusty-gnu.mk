@@ -2,6 +2,8 @@
 #
 # Typical use with mkmf
 # mkmf -t linux-ubuntu-trusty-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+#
+# Designed to work on Ubuntu-14
 
 ############
 # Commands Macors

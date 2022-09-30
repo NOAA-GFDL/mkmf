@@ -1,9 +1,9 @@
 # Template for the GNU Compiler Collection on Trusty version of Ubuntu Linux systems (used by Travis-CI)
 #
 # Typical use with mkmf
-# mkmf -t linux-ubuntu-xenial-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t linux-ubuntu-jammy-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 #
-# Designed to work on Ubuntu-16
+# Designed to work on Ubuntu-22
 
 ############
 # Commands Macors
@@ -84,6 +84,7 @@ CPPDEFS += -Duse_netCDF
 
 # Additional Preprocessor Macros needed due to  Autotools and CMake
 CPPDEFS += -DHAVE_SCHED_GETAFFINITY
+CPPDEFS += -DHAVE_GETTID
 
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
@@ -91,7 +92,7 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check
+FFLAGS := -fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check -fallow-invalid-boz -fallow-argument-mismatch
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3
