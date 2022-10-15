@@ -142,6 +142,8 @@ LDFLAGS_COVERAGE :=
 LIBS =
 # NetCDF library flags
 LIBS += $(shell nf-config --flibs)
+# netCDF C library flags, in case installed in a separate directory
+LIBS += $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
