@@ -97,7 +97,7 @@ ISA_OPT = $(ISA)
 ISA_REPRO = $(ISA)
 ISA_DEBUG = $(ISA)
 else
-ISA_OPT = -march=core-avx2 -qno-opt-dynamic-align
+ISA_OPT = -march=core-avx-i -qno-opt-dynamic-align
 ISA_REPRO = -march=core-avx-i -qno-opt-dynamic-align
 ISA_DEBUG = -march=core-avx-i -qno-opt-dynamic-align
 endif
