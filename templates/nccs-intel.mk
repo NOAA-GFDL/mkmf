@@ -8,7 +8,7 @@
 ############
 FC = mpiifort
 CC = mpiicc
-LD = mpiifort $(MAIN_PROGRAM)
+LD = mpiifort
 
 #######################
 # Build target macros

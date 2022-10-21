@@ -8,7 +8,7 @@
 ############
 FC = ftn
 CC = cc
-LD = ftn $(MAIN_PROGRAM)
+LD = ftn
 
 #######################
 # Build target macros
