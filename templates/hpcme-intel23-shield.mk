@@ -143,7 +143,7 @@ LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := $(shell pkg-config --libs bacio) $(shell pkg-config --libs sp_d) $(shell pkg-config --libs w3emc_d) $(shell pkg-config --libs w3nco_d) $(shell pkg-config --libs yaml) $(shell pkg-config --libs hdf5) $(shell pkg-config --libs hdf5_fortran) $(shell pkg-config --libs hdf5_hl) $(shell nf-config --flibs) $(shell nc-config --libs)
+LIBS := -lw3nco_d -lw3emc_d -lsp_d -lbacio_4 -lbacio_8 -lyaml $(shell pkg-config --libs hdf5) $(shell pkg-config --libs hdf5_fortran) $(shell pkg-config --libs hdf5_hl) $(shell nf-config --flibs) $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
