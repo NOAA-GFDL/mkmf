@@ -378,7 +378,7 @@ sub scanfile_for_keywords {
             $obj_of_module{$module} = $object;
          }
       }
-      if ( $line =~ /submodule\((.*?)\) (.*)/) {
+      if ( $line =~ /^\s*submodule\s*+\((\s*\w*\s*)\)\s+(\w*)/ix) {
          # Submodules depend on the parent module, but not vice versa
          #   $1: parent module name
          #   $2: submodule name
