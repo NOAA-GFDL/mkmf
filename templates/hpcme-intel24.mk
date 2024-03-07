@@ -42,6 +42,8 @@ NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
                      # compiler option.  Default behavior is to compile
                      # with -qoverride-limits.
 
+STATIC =             # If non-blank do a static build
+
 NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
@@ -191,6 +193,10 @@ LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
 LDFLAGS += $(LIBS)
+
+ifdef STATIC
+  LDFLAGS += -static
+endif
 
 #---------------------------------------------------------------------------
 # you should never need to change any lines below.
