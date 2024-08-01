@@ -56,6 +56,9 @@ ISA =
 
 COVERAGE =           # Add the code coverage compile options.
 
+STANDARD =           # Issue warnings for the given Fortran standard (f90, f95, f03, f08, f18)
+                     # Implies VERBOSE for output
+
 # Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
@@ -112,6 +115,7 @@ FFLAGS_OPENMP = -qopenmp
 FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
 FFLAGS_VERBOSE = -v -V -what -warn all -qopt-report-phase=vec -qopt-report=2
 FFLAGS_COVERAGE = -prof-gen=srcpos
+FFLAGS_STANDARD = -stand $(STANDARD)
 
 # Macro for C preprocessor
 CPPFLAGS := -D__IFC $(INCLUDES)
@@ -168,6 +172,11 @@ endif
 
 ifdef NO_OVERRIDE_LIMITS
 FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
+endif
+
+ifdef STANDARD
+FFLAGS += $(FFLAGS_STANDARD)
+VERBOSE = 1
 endif
 
 ifdef VERBOSE
