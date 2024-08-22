@@ -55,6 +55,8 @@ SSE =                # The SSE options to be used to compile.  If blank,
 
 COVERAGE =           # Add the code coverage compile options.
 
+USE_R4 =             # If non-blank, use R4 for reals
+
 # Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
@@ -76,6 +78,13 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
+ifdef USE_R4
+REAL_PRECISION := -r4
+CPPDEFS += -DOVERLOAD_R4
+else
+REAL_PRECISION := -r8
+endif
+
 # Macro for Fortran preprocessor
 FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
@@ -86,7 +95,7 @@ FPPFLAGS += $(shell nf-config --fflags)
 FPPFLAGS += -I$(HDF5)/include
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -debug minimal -fp-model source

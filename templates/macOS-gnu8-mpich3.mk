@@ -60,6 +60,8 @@ SSE =                # The SSE options to be used to compile.  If blank,
 
 COVERAGE =           # Add the code coverage compile options.
 
+USE_R4 =             # If non-blank, use R4 for reals
+
 # Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
@@ -81,6 +83,13 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
+ifdef USE_R4
+REAL_PRECISION := -fdefault-real-4
+CPPDEFS += -DOVERLOAD_R4
+else
+REAL_PRECISION := -fdefault-real-8
+endif
+
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
@@ -98,7 +107,7 @@ FPPFLAGS += $(shell nf-config --fflags)
 FPPFLAGS += $(shell pkg-config --cflags-only-I mpich)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-double-8 -fdefault-real-8 -Waliasing -ffree-line-length-none -fno-range-check
+FFLAGS := -fcray-pointer -fdefault-double-8 $(REAL_PRECISION) -Waliasing -ffree-line-length-none -fno-range-check
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3

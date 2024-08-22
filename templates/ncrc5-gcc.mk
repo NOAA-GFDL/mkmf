@@ -48,6 +48,8 @@ INCLUDES := $(shell pkg-config --cflags yaml-0.1)
 
 COVERAGE =           # Add the code coverage compile options.
 
+USE_R4 =             # If non-blank, use R4 for reals
+
 # Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
@@ -69,6 +71,13 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
+ifdef USE_R4
+REAL_PRECISION := -fdefault-real-4
+CPPDEFS += -DOVERLOAD_R4
+else
+REAL_PRECISION := -fdefault-real-8
+endif
+
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
@@ -81,7 +90,7 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-real-8 -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check -fallow-argument-mismatch
+FFLAGS := -fcray-pointer $(REAL_PRECISION) -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check -fallow-argument-mismatch
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O2 -fno-expensive-optimizations
