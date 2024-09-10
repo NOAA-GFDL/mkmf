@@ -79,10 +79,10 @@ endif
 endif
 
 ifdef USE_R4
-REAL_PRECISION := -r4
+REAL_PRECISION := -real-size 32
 CPPDEFS += -DOVERLOAD_R4
 else
-REAL_PRECISION := -r8
+REAL_PRECISION := -real-size 64
 endif
 
 # Required Preprocessor Macros:
