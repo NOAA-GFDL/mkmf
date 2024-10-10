@@ -56,6 +56,8 @@ ISA =
 
 COVERAGE =           # Add the code coverage compile options.
 
+USE_R4 =             # If non-blank, use R4 for reals
+
 # Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
@@ -77,6 +79,13 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
+ifdef USE_R4
+REAL_PRECISION := -real-size 32
+CPPDEFS += -DOVERLOAD_R4
+else
+REAL_PRECISION := -real-size 64
+endif
+
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
@@ -89,7 +98,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -traceback
 
 # Set the ISA (vectorization) as user defined or based on the target
 ifdef ISA
