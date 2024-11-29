@@ -100,7 +100,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback -diag-disable=10448
 
 # Set the ISA (vectorization) as user defined or based on the target
 ifdef ISA
