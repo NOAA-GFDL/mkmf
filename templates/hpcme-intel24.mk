@@ -50,7 +50,7 @@ NETCDF =             # If value is '3' and CPPDEFS contains
 
                      # A list of -I Include directories to be added to the
                      # the compile command.
-INCLUDES := $(shell pkg-config --cflags yaml-0.1) $(shell pkg-config --cflags hdf5) $(shell pkg-config --cflags hdf5_fortran) $(shell nf-config --flibs) $(shell nc-config --cflags) $(shell nf-config --fflags)
+INCLUDES := $(shell pkg-config --cflags hdf5_fortran) $(shell nf-config --flibs) $(shell nc-config --cflags) $(shell nf-config --fflags) -I/opt/views/view/include
 
                      # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.
@@ -100,7 +100,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback -diag-disable=10448
 
 # Set the ISA (vectorization) as user defined or based on the target
 ifdef ISA
@@ -154,7 +154,7 @@ LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := $(shell pkg-config --libs yaml-0.1) $(shell pkg-config --libs hdf5) $(shell pkg-config --libs hdf5_fortran) $(shell pkg-config --libs hdf5_hl) $(shell nf-config --flibs) $(shell nc-config --libs)
+LIBS := -L/opt/views/view/lib -lyaml -lhdf5 -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran $(shell nf-config --flibs) $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
