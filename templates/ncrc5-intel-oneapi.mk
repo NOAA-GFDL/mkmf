@@ -114,7 +114,7 @@ endif
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -debug minimal -fp-model source $(ISA_OPT)
 FFLAGS_REPRO = -O2 -debug minimal -fp-model source $(ISA_REPRO)
-FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv $(ISA_DEBUG)
+FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -check nouninit -warn -warn noerrors -fpe0 -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
 FFLAGS_OPENMP = -qopenmp
