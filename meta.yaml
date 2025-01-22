@@ -1,0 +1,50 @@
+package:
+  name: mkmf
+  version: 'alpha'
+#  version: '{{ environ.get("GIT_DESCRIBE_TAG", data.get("version")) }}'
+
+source:
+  path: .
+
+build:
+  script:
+    - cp mkmf/bin/mkmf $PREFIX/bin
+    - cp mkmf/bin/list_paths $PREFIX/bin
+    - cp mkmf/bin/git-version-string $PREFIX/bin
+
+
+requirements:
+  host:
+    - conda-forge::perl
+    - conda-forge::tcsh
+    - conda-forge::bats-core
+  run:
+    - conda-forge::perl
+    - conda-forge::tcsh
+    - conda-forge::bats-core
+
+test:
+  requires:
+    - conda-forge::perl
+    - conda-forge::tcsh
+    - conda-forge::bats-core
+  source_files:
+      - mkmf/
+  commands:
+    - which mkmf && echo "success! :-)" || echo "failure guard :-("
+    - mkmf && echo "success! :-)" || echo "failure guard :-("
+    - bats mkmf/t/t000-basic.sh && echo "success! :-)" || echo "failure guard :-("
+    - bats mkmf/t/t001-list_paths.sh && echo "success! :-)" || echo "failure guard :-("
+    - bats mkmf/t/t002-git-version-string.sh && echo "success! :-)" || echo "failure guard :-("
+    - bats mkmf/t/t003-mkmf.sh && echo "success! :-)" || echo "failure guard :-("
+    - bats mkmf/t/t004-templates.sh && echo "success! :-)" || echo "failure guard :-("
+
+
+  
+about:
+  home: https://github.com/NOAA-GFDL/mkmf
+
+
+
+
+        

@@ -1,0 +1,8 @@
+name: mkmf
+channels:
+  - conda-forge
+  - noaa-gfdl
+dependencies:
+  - conda-forge::perl
+  - conda-forge::tcsh
+  - conda-forge::bats-core
