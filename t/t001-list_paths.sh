@@ -27,7 +27,7 @@ teardown() {
 
 @test "list_paths using default out file" {
    [ -e ${BATS_TEST_DIRNAME}/src ]
-   run list_paths -v ${BATS_TEST_DIRNAME}/src
+   run list_paths -vvv ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
    pwd
@@ -35,12 +35,12 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ $num_paths -eq 7 ]
-   [ $num_paths -eq 6 ]
-#   [ "$(wc -l < path_names)" -eq "6" ]
-#   [ "$(wc -l < path_names)" -eq 6 ]
-#   [ $(wc -l < path_names) -eq "6" ]
-#   [ $(wc -l < path_names) -eq 6 ]
+#   [ $num_paths -eq 7 ]
+#   [ $num_paths -eq 6 ]
+   [ "$(wc -l < path_names)" -eq "6" ]
+   [ "$(wc -l < path_names)" -eq 6 ]
+   [ $(wc -l < path_names) -eq "6" ]
+   [ $(wc -l < path_names) -eq 6 ]
 }
 
 @test "list_paths verbose output" {
@@ -48,6 +48,8 @@ teardown() {
    [ "$status" -eq 0 ]
    [ -e path_names ]
    num_paths=$(cat path_names | wc -l)
+   echo $num_paths
+   cat path_names   
    [ $num_paths -eq 6 ]
 }
 
@@ -55,6 +57,11 @@ teardown() {
    run list_paths -t ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
+   pwd
+   ls path_names
+   num_paths=$(cat path_names | wc -l)
+   echo $num_paths
+   cat path_names
    [ "$(wc -l < path_names)" -eq 8 ]
 }
 
@@ -62,6 +69,11 @@ teardown() {
    run list_paths ${BATS_TEST_DIRNAME}/src ${BATS_TEST_DIRNAME}/src/t/file7.F90
    [ "$status" -eq 0 ]
    [ -e path_names ]
+   pwd
+   ls path_names
+   num_paths=$(cat path_names | wc -l)
+   echo $num_paths
+   cat path_names
    [ "$(wc -l < path_names)" -eq 7 ]
 }
 
@@ -70,6 +82,11 @@ teardown() {
    run list_paths -o ${outFileName} ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e ${outFileName} ]
+   pwd
+   ls $outFileName
+   num_paths=$(cat $outFileName | wc -l)
+   echo $num_paths
+   cat path_names
    [ "$(wc -l < $outFileName)" = "6" ]
 }
 
@@ -78,6 +95,11 @@ teardown() {
    [ "$status" -eq 0 ]
    [ -e path_names ]
    [ -e path_names.html ]
+   pwd
+   ls path_names
+   num_paths=$(cat path_names | wc -l)
+   echo $num_paths
+   cat path_names
    [ "$(wc -l < path_names.html)" -eq 5 ]
 }
 
@@ -85,5 +107,10 @@ teardown() {
    run list_paths -l ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
+   pwd
+   ls path_names
+   num_paths=$(cat path_names | wc -l)
+   echo $num_paths
+   cat path_names
    [ "$(wc -l < path_names)" -eq 7 ]
 }
