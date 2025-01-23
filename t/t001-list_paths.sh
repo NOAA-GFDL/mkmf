@@ -37,10 +37,10 @@ teardown() {
    cat path_names
 #   [ $num_paths -eq 7 ]
 #   [ $num_paths -eq 6 ]
-   [ "$(wc -l < path_names)" -eq "6" ]
-   [ "$(wc -l < path_names)" -eq 6 ]
-   [ $(wc -l < path_names) -eq "6" ]
-   [ $(wc -l < path_names) -eq 6 ]
+   [ "$(wc -l < path_names)" -eq "7" ]
+   [ "$(wc -l < path_names)" -eq 7 ]
+   [ $(wc -l < path_names) -eq "7" ]
+   [ $(wc -l < path_names) -eq 7 ]
 }
 
 @test "list_paths verbose output" {
