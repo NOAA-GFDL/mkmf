@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
 
 setup() {
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
+   #binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
-   export PATH=${binDir}:${PATH}
+   #export PATH=${binDir}:${PATH}
    cd ${testDir}
 }
 

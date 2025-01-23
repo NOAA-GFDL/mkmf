@@ -2,9 +2,10 @@
 
 setup() {
    # Set the PATH
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
+   echo "" && echo "(setup) BATS_TEST_DIRNAME=${BATS_TEST_DIRNAME}"
+   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
    echo "" && echo "(setup) binDir = ${binDir}"
-   export PATH=${binDir}:${PATH}
+   #export PATH=${binDir}:${PATH}
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
    echo "" && echo "(setup) testDir = ${testDir}"
@@ -17,9 +18,9 @@ teardown() {
 
 @test "list_paths prints version" {
    run list_paths -V
-   echo $output
    [ "$status" -eq 0 ]
    [[ "$output" =~ ^list_paths\ [0-9]+\.[0-9]+\.[0-9]+$ ]]
+   echo $output
 }
 
 @test "list_paths requires at least one argument" {
@@ -32,6 +33,7 @@ teardown() {
    [ "$status" -eq 0 ]
    [ -e path_names ]
    [ "$(wc -l < path_names)" -eq 6 ]
+#   [ 1 -eq 0 ]
 }
 
 @test "list_paths verbose output" {

@@ -31,7 +31,8 @@ test:
     - conda-forge::tcsh
     - conda-forge::bats-core
   source_files:
-      - t/
+    - t/
+    - mkmf/
   commands:
     - which mkmf
     - mkmf
