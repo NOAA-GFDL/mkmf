@@ -1,5 +1,3 @@
-# conda deactivate; conda env remove -y -n mkmf_test; conda create -n mkmf_test -c ians_local mkmf; conda activate mkmf_test;
-
 package:
   name: mkmf
   version: 'alpha'
@@ -34,13 +32,12 @@ test:
     - t/
     - mkmf/
   commands:
-#    - which mkmf
-#    - mkmf
-#    - bats --verbose-run t/t000-basic.sh
+    - which mkmf
+    - bats -j 1 -x --verbose-run t/t000-basic.sh
     - bats -j 1 -x --verbose-run t/t001-list_paths.sh
 #    - bats --verbose-run t/t002-git-version-string.sh || echo "failure guard :-("
-#    - bats --verbose-run t/t003-mkmf.sh
-#    - bats --verbose-run t/t004-templates.sh
+    - bats -j 1 -x --verbose-run t/t003-mkmf.sh
+    - bats -j 1 -x --verbose-run t/t004-templates.sh
 
 
   

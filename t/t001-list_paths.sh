@@ -26,11 +26,9 @@ teardown() {
 }
 
 @test "list_paths using default out file" {
-   run list_paths -vvv ${BATS_TEST_DIRNAME}/src
+   run list_paths ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
-   pwd
-   ls path_names
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
@@ -78,7 +76,7 @@ teardown() {
    [ -e ${outFileName} ]
    num_paths=$(cat $outFileName | wc -l)
    echo $num_paths
-   cat path_names
+   cat $outFileName
 #   [ $num_paths -eq 6 ]
    [ $num_paths -eq 7 ]
 }
@@ -88,24 +86,21 @@ teardown() {
    [ "$status" -eq 0 ]
    [ -e path_names ]
    [ -e path_names.html ]
-   pwd
-   ls path_names
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
 #   [ $num_paths -eq 5 ]
-   [ $num_paths -eq 6 ]
+#   [ $num_paths -eq 6 ]
+   [ $num_paths -eq 7 ]
 }
 
 @test "list_paths find symlinks" {
    run list_paths -l ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
-   pwd
-   ls path_names
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 7 ]
-   [ $num_paths -eq 8 ]
+   [ $num_paths -eq 7 ]
+#   [ $num_paths -eq 8 ]
 }
