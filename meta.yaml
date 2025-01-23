@@ -37,7 +37,7 @@ test:
 #    - which mkmf
 #    - mkmf
 #    - bats --verbose-run t/t000-basic.sh
-    - bats --verbose-run t/t001-list_paths.sh || echo "failure guard :-("
+    - bats --no-parallelize-within-files --verbose-run t/t001-list_paths.sh
 #    - bats --verbose-run t/t002-git-version-string.sh || echo "failure guard :-("
 #    - bats --verbose-run t/t003-mkmf.sh
 #    - bats --verbose-run t/t004-templates.sh
@@ -46,8 +46,3 @@ test:
   
 about:
   home: https://github.com/NOAA-GFDL/mkmf
-
-
-
-
-        
