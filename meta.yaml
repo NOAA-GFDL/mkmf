@@ -20,29 +20,26 @@ requirements:
     - conda-forge::perl
     - conda-forge::tcsh
     - conda-forge::bats-core
-    - conda-forge::git
   run:
     - conda-forge::perl
     - conda-forge::tcsh
     - conda-forge::bats-core
-    - conda-forge::git    
 
 test:
   requires:
     - conda-forge::perl
     - conda-forge::tcsh
     - conda-forge::bats-core
-    - conda-forge::git    
   source_files:
       - t/
   commands:
     - which mkmf
     - mkmf
-    - bats t/t000-basic.sh && echo "success! :-)" || echo "failure guard :-("
-    - bats t/t001-list_paths.sh && echo "success! :-)" || echo "failure guard :-("
-    - bats t/t002-git-version-string.sh && echo "success! :-)" || echo "failure guard :-("
-    - bats t/t003-mkmf.sh && echo "success! :-)" || echo "failure guard :-("
-    - bats t/t004-templates.sh && echo "success! :-)" || echo "failure guard :-("
+    - bats --verbose-run t/t000-basic.sh
+    - bats --verbose-run t/t001-list_paths.sh || echo "failure guard :-("
+    - bats --verbose-run t/t002-git-version-string.sh || echo "failure guard :-("
+    - bats --verbose-run t/t003-mkmf.sh
+    - bats --verbose-run t/t004-templates.sh
 
 
   
