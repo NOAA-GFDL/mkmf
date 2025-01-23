@@ -33,6 +33,7 @@ teardown() {
    pwd
    ls path_names
    num_paths=$(cat path_names | wc -l)
+   echo $num_paths
    [ $num_paths -eq 6 ]
 #   [ "$(wc -l < path_names)" -eq "6" ]
 #   [ "$(wc -l < path_names)" -eq 6 ]
