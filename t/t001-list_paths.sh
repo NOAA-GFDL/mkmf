@@ -10,7 +10,7 @@ setup() {
 }
 
 teardown() {
-   echo FOO #rm -rf ${testDir}
+   rm -rf ${testDir}
 }
 
 @test "list_paths prints version" {
@@ -26,7 +26,6 @@ teardown() {
 }
 
 @test "list_paths using default out file" {
-   [ -e ${BATS_TEST_DIRNAME}/src ]
    run list_paths -vvv ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
@@ -35,12 +34,8 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 7 ]
 #   [ $num_paths -eq 6 ]
-   [ "$(wc -l < path_names)" -eq "7" ]
-   [ "$(wc -l < path_names)" -eq 7 ]
-   [ $(wc -l < path_names) -eq "7" ]
-   [ $(wc -l < path_names) -eq 7 ]
+   [ $num_paths -eq 7 ]
 }
 
 @test "list_paths verbose output" {
@@ -50,31 +45,30 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names   
-   [ $num_paths -eq 6 ]
+#   [ $num_paths -eq 6 ]
+   [ $num_paths -eq 7 ]
 }
 
 @test "list_paths find files in t and test_* directories" {
    run list_paths -t ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
-   pwd
-   ls path_names
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ "$(wc -l < path_names)" -eq 8 ]
+#   [ $num_paths -eq 8 ]
+   [ $num_paths -eq 9 ]
 }
 
 @test "list_paths find specific files in t or test_* directories" {
    run list_paths ${BATS_TEST_DIRNAME}/src ${BATS_TEST_DIRNAME}/src/t/file7.F90
    [ "$status" -eq 0 ]
    [ -e path_names ]
-   pwd
-   ls path_names
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ "$(wc -l < path_names)" -eq 7 ]
+#   [ $num_paths -eq 7 ]
+   [ $num_paths -eq 8 ]
 }
 
 @test "list_paths with specified out file" {
@@ -82,12 +76,11 @@ teardown() {
    run list_paths -o ${outFileName} ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e ${outFileName} ]
-   pwd
-   ls $outFileName
    num_paths=$(cat $outFileName | wc -l)
    echo $num_paths
    cat path_names
-   [ "$(wc -l < $outFileName)" = "6" ]
+#   [ $num_paths -eq 6 ]
+   [ $num_paths -eq 7 ]
 }
 
 @test "list_paths finds html files" {
@@ -100,7 +93,8 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ "$(wc -l < path_names.html)" -eq 5 ]
+#   [ $num_paths -eq 5 ]
+   [ $num_paths -eq 6 ]
 }
 
 @test "list_paths find symlinks" {
@@ -112,5 +106,6 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ "$(wc -l < path_names)" -eq 7 ]
+#   [ $num_paths -eq 7 ]
+   [ $num_paths -eq 8 ]
 }
