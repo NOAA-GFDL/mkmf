@@ -3,9 +3,11 @@
 setup() {
    # Set the PATH
    binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
+   echo "" && echo "(setup) binDir = ${binDir}"
    export PATH=${binDir}:${PATH}
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
+   echo "" && echo "(setup) testDir = ${testDir}"
    cd ${testDir}
 }
 
@@ -15,9 +17,9 @@ teardown() {
 
 @test "list_paths prints version" {
    run list_paths -V
-   [ "$status" -eq 0 ]
-   [[ "$output" =~ ^list_paths\ [0-9]+\.[0-9]+$ ]]
    echo $output
+   [ "$status" -eq 0 ]
+   [[ "$output" =~ ^list_paths\ [0-9]+\.[0-9]+\.[0-9]+$ ]]
 }
 
 @test "list_paths requires at least one argument" {
