@@ -26,17 +26,17 @@ teardown() {
 }
 
 @test "list_paths using default out file" {
+   [ -e ${BATS_TEST_DIRNAME}/src ]
    run list_paths -v ${BATS_TEST_DIRNAME}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
-   [ $(wc -l < path_names) -eq 6 ]
-   [ "$(wc -l < path_names)" -eq "6" ]
-   [ "$(wc -l < path_names)" -eq 6 ]
-   [ $(wc -l < path_names) -eq "6" ]
-   echo ${BATS_TEST_DIRNAME}
    pwd
    ls path_names
    cat path_names
+   [ "$(wc -l < path_names)" -eq "6" ]
+   [ "$(wc -l < path_names)" -eq 6 ]
+   [ $(wc -l < path_names) -eq "6" ]
+   [ $(wc -l < path_names) -eq 6 ]
 }
 
 @test "list_paths verbose output" {
