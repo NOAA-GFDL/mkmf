@@ -3,8 +3,8 @@
 setup() {
    # set PATH if needed
    binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
-   which mkmf
-   if [ $? -eq 0 ]; then
+   do_we_have_mkmf=$(which mkmf) || echo "no we do not!"
+   if [ $do_we_have_mkmf ]; then
 	   echo 'likely conda case'
    else
 	   export PATH=${binDir}:${PATH}

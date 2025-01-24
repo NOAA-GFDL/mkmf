@@ -35,7 +35,7 @@ test:
     - which mkmf
     - bats -j 1 -x --verbose-run t/t000-basic.sh
     - bats -j 1 -x --verbose-run t/t001-list_paths.sh
-#    - bats --verbose-run t/t002-git-version-string.sh || echo "failure guard :-("
+    - bats -j 1 -x --verbose-run t/t002-git-version-string.sh || echo "failure guard :-("
     - bats -j 1 -x --verbose-run t/t003-mkmf.sh
     - bats -j 1 -x --verbose-run t/t004-templates.sh
 
