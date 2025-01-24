@@ -1,7 +1,7 @@
 package:
   name: mkmf
-  version: 'alpha'
-#  version: '{{ environ.get("GIT_DESCRIBE_TAG", data.get("version")) }}'
+#  version: '2025.01'
+  version: '{{ environ.get("GIT_DESCRIBE_TAG", data.get("version")) }}'
 
 source:
   path: .
