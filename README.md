@@ -55,10 +55,10 @@ export $PATH=$PWD/mkmf/bin:$PATH
 ```
 
 ### install conda package from the channel into your current environment
-`conda install some_channel::mkmf`
+`conda install noaa-gfdl::mkmf`
 
 ### create a conda environment using the package from the channel
-`conda create -n env_name some_channel::mkmf`
+`conda create -n env_name noaa-gfdl::mkmf`
 
 
 Disclaimer
