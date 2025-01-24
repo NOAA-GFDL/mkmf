@@ -32,8 +32,8 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 6 ]
-   [ $num_paths -eq 7 ]
+   [ $num_paths -eq 6 ] #local answer
+#   [ $num_paths -eq 7 ] #current conda build test answer
 }
 
 @test "list_paths verbose output" {
@@ -43,8 +43,8 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names   
-#   [ $num_paths -eq 6 ]
-   [ $num_paths -eq 7 ]
+   [ $num_paths -eq 6 ] #local answer
+#   [ $num_paths -eq 7 ] #current conda build test answer
 }
 
 @test "list_paths find files in t and test_* directories" {
@@ -54,8 +54,8 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 8 ]
-   [ $num_paths -eq 9 ]
+   [ $num_paths -eq 8 ] #local answer
+#   [ $num_paths -eq 9 ] #current conda build test answer
 }
 
 @test "list_paths find specific files in t or test_* directories" {
@@ -65,8 +65,8 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 7 ]
-   [ $num_paths -eq 8 ]
+   [ $num_paths -eq 7 ] #local answer
+#   [ $num_paths -eq 8 ] #current conda build test answer
 }
 
 @test "list_paths with specified out file" {
@@ -77,8 +77,8 @@ teardown() {
    num_paths=$(cat $outFileName | wc -l)
    echo $num_paths
    cat $outFileName
-#   [ $num_paths -eq 6 ]
-   [ $num_paths -eq 7 ]
+   [ $num_paths -eq 6 ] #local answer
+#   [ $num_paths -eq 7 ] #current conda build test answer
 }
 
 @test "list_paths finds html files" {
@@ -89,9 +89,9 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 5 ]
-#   [ $num_paths -eq 6 ]
-   [ $num_paths -eq 7 ]
+#   [ $num_paths -eq 5 ] #local answer?
+   [ $num_paths -eq 6 ] #local answer?
+#   [ $num_paths -eq 7 ] #current conda build test answer
 }
 
 @test "list_paths find symlinks" {
@@ -101,6 +101,6 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ $num_paths -eq 7 ]
-#   [ $num_paths -eq 8 ]
+   [ $num_paths -eq 7 ] #current conda build test answer
+#   [ $num_paths -eq 8 ] #local answer
 }
