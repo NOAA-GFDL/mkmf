@@ -1,6 +1,10 @@
 #!/usr/bin/env bats
 
 setup() {
+   echo "(setup) BATS_TEST_DIRNAME=${BATS_TEST_DIRNAME}"
+   cd ${BATS_TEST_DIRNAME}/src \
+	   && ln -s file6.linked file6.f90
+   cd -
    binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
    export PATH=${binDir}:${PATH}
@@ -9,6 +13,7 @@ setup() {
 }
 
 teardown() {
+   rm -f ${BATS_TEST_DIRNAME}/src/file6.f90
    rm -rf ${testDir}
 }
 
