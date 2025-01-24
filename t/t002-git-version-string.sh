@@ -20,6 +20,8 @@ setup() {
    [ -e file1 ]
    cat file1
    git add ./file1
+   git config --local user.email "you@example.com"
+   git config --local user.name "Your Name"
    git commit -o file1 -m 'Temporary git repo for testing- file1 filled with stuff'
 }
 
