@@ -1,4 +1,67 @@
+<!--- we can do a badge from the pipeline ala fre-cli i think, but use artifact-uploading maybe
 [![Build Status](https://travis-ci.org/NOAA-GFDL/mkmf.svg?branch=master)](https://travis-ci.org/underwoo/mkmf)
+--->
+
+`mkmf`: Make Makefile
+===================
+
+__`mkmf`__ is a tool written in `perl5` that will construct a makefile
+from distributed source. A single executable program is the typical
+result, but I dare say it is extensible to a makefile for any purpose
+at all.
+
+__`mkmf`__ is pronounced make-make-file or make-m-f or even McMuff (Paul
+Kushner's suggestion).
+
+Features
+--------
+
+* Understands `f90` dependencies (modules and use), Fortran's
+  `include` statement, and cpp's `#include` statement, in any type of
+  source.
+* No restrictions on filenames, module names, etc.
+* Supports the concept of overlays (where source is maintained in
+  layers of directories with a defined precedence).
+* Keeps track of changes to `cpp` flags, and knows when to recompile
+  affected source (i.e, files containing `#ifdefs` that have been
+  changed since the last invocation).
+* It is free, and released under GPL. 
+
+
+Requirements
+------------
+`mkmf` and `list_paths` can be run on any unix type system that has
+C-shell ([`tcsh`](http://www.tcsh.org/)) and `perl` version 5 installed.
+`git-version-string` requires `git`. 
+
+Usage as a `conda` package requires `conda`.
+
+For testing, we recommend [`bats-core`](https://github.com/bats-core/bats-core),
+a current and up-to-date (as of January 2025) fork of the original 
+[`bats`](https://github.com/sstephenson/bats). Tests are run in the `build_conda`
+github workflow automatically for PRs. To test locally by hand, simply call `bats`
+and target the testing scripts in `t/` as desired from the root of this repository.
+
+Installation
+------------
+
+### **(no `conda`) install a copy of this repository**
+Clone the repository onto a file system with the aforementioned requirements,
+and add the `mkmf/bin` directory to your shell's `$PATH`.
+
+### *create a `conda` environment and use code from this repository*
+```
+conda env create -y -f ./environment.yaml
+conda activate <your_envs_name>
+export $PATH=$PWD/mkmf/bin:$PATH
+```
+
+### install conda package from the channel into your current environment
+`conda install some_channel::mkmf`
+
+### create a conda environment using the package from the channel
+`conda create -n env_name some_channel::mkmf`
+
 
 Disclaimer
 ==========
@@ -17,43 +80,3 @@ Commerce. The Department of Commerce seal and logo, or the seal and
 logo of a DOC bureau, shall not be used in any manner to imply
 endorsement of any commercial product or activity by DOC or the United
 States Government.
-
-mkmf: Make Makefile
-===================
-
-__mkmf__ is a tool written in perl5 that will construct a makefile
-from distributed source. A single executable program is the typical
-result, but I dare say it is extensible to a makefile for any purpose
-at all.
-
-
-Features
---------
-
-* Understands dependencies in f90 (modules and use), the Fortran
-  include statement, and the cpp #include statement in any type of
-  source
-* No restrictions on filenames, module names, etc.
-* Supports the concept of overlays (where source is maintained in
-  layers of directories with a defined precedence)
-* Keeps track of changes to cpp flags, and knows when to recompile
-  affected source (i.e, files containing #ifdefs that have been
-  changed since the last invocation);
-* Will run on any unix platform that has perl version 5 installed
-* It is free, and released under GPL. 
-
-
-Pronunciation
--------------
-
-__mkmf__ is pronounced make-make-file or make-m-f or even McMuff (Paul
-Kushner's suggestion).
-
-Installation
-------------
-
-*mkmf* and *list_paths* can be run on any \*nix type system that has
-C-shell ([tcsh](http://www.tcsh.org/)) and Perl version 5 installed.
-
-To install, place the repository on the file system and add the bin
-directory to PATH.
