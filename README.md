@@ -1,9 +1,7 @@
-<!--- we can do a badge from the pipeline ala fre-cli i think, but use artifact-uploading maybe
-[![Build Status](https://travis-ci.org/NOAA-GFDL/mkmf.svg?branch=master)](https://travis-ci.org/underwoo/mkmf)
---->
-
 `mkmf`: Make Makefile
 ===================
+
+[![CI](https://github.com/NOAA-GFDL/mkmf/workflows/build_conda/badge.svg)](https://github.com/NOAA-GFDL/mkmf/actions?query=workflow%3Abuild_conda)
 
 __`mkmf`__ is a tool written in `perl5` that will construct a makefile
 from distributed source. A single executable program is the typical
