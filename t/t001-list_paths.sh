@@ -1,13 +1,22 @@
 #!/usr/bin/env bats
 
 setup() {
-   echo "(setup) BATS_TEST_DIRNAME=${BATS_TEST_DIRNAME}"
+   # set PATH if needed
+   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
+   which mkmf
+   if [ $? -eq 0 ]; then
+	   echo 'likely conda case'
+   else
+	   export PATH=${binDir}:${PATH}
+   fi
+   
+   # for tests/cases that depend on a symbolic link to cover
    cd ${BATS_TEST_DIRNAME}/src \
 	   && ln -s file6.linked file6.f90
    cd -
+   
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
-   echo "(setup) testDir = ${testDir}"
    cd ${testDir}
 }
 
