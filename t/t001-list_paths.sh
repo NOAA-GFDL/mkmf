@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 
 setup() {
-   # Set the PATH
    echo "(setup) BATS_TEST_DIRNAME=${BATS_TEST_DIRNAME}"
+   
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
    echo "(setup) testDir = ${testDir}"
@@ -89,8 +89,7 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-#   [ $num_paths -eq 5 ] #local answer?
-   [ $num_paths -eq 6 ] #local answer?
+   [ $num_paths -eq 6 ] #local answer
 #   [ $num_paths -eq 7 ] #current conda build test answer
 }
 
@@ -101,6 +100,5 @@ teardown() {
    num_paths=$(cat path_names | wc -l)
    echo $num_paths
    cat path_names
-   [ $num_paths -eq 7 ] #current conda build test answer
-#   [ $num_paths -eq 8 ] #local answer
+   [ $num_paths -eq 7 ]
 }
