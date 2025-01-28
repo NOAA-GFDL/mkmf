@@ -43,22 +43,45 @@ and target the testing scripts in `t/` as desired from the root of this reposito
 Installation
 ------------
 
-### **(no `conda`) install a copy of this repository**
-Clone the repository onto a file system with the aforementioned requirements,
-and add the `mkmf/bin` directory to your shell's `$PATH`.
-
-### *create a `conda` environment and use code from this repository*
+### **(no `conda`)** install and use a copy of this repository
+Clone the repository onto a file system with the aforementioned requirements.
+Then and add the `mkmf/bin` directory to your shell's `$PATH`, like so:
 ```
-conda env create -y -f ./environment.yaml
-conda activate <your_envs_name>
+git clone https://github.com/noaa-gfdl/mkmf.git mkmf && cd mkmf
 export $PATH=$PWD/mkmf/bin:$PATH
 ```
 
-### install conda package from the channel into your current environment
-`conda install noaa-gfdl::mkmf`
+### `conda env create` and use a copy of this repository
+Similar to the previous approach, clone, but before adjusting `$PATH`, 
+we create the `conda` environment named `mkmf` with all the required 
+dependencies. To change the default name of the environment, edit the
+first line in `environment.yaml`.
+```
+git clone https://github.com/noaa-gfdl/mkmf.git mkmf && cd mkmf
+conda env create -y -f ./environment.yaml
+conda activate mkmf
+export $PATH=$PWD/mkmf/bin:$PATH
+```
+
+### install package from the `conda` channel into `conda` environment
+Dissimilar from the aforementioned approaches, this requires no cloning,
+nor any manual adjusting of `$PATH`. It just assumes your `conda` env of
+choice is already activated. The package is retrieved from the `noaa-gfdl` 
+conda channel.
+
+The following line installs `mkmf` iinto the current environment, and 
+handles everything:
+```
+conda activate existing_env
+(existing_env) conda install noaa-gfdl::mkmf
+```
 
 ### create a conda environment using the package from the channel
-`conda create -n env_name noaa-gfdl::mkmf`
+This approach creates a fresh, new environment with `mkmf` and all of 
+it's dependencies, and requires no manual adjusting of `$PATH`
+```
+conda create -y -n env_name noaa-gfdl::mkmf
+```
 
 
 Disclaimer
