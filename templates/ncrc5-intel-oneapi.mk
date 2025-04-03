@@ -58,6 +58,8 @@ COVERAGE =           # Add the code coverage compile options.
 
 USE_R4 =             # If non-blank, use R4 for reals
 
+USE_LTO =            # Enable link-time optimization
+
 # Need to use at least GNU Make version 3.81
 need := 3.81
 ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
@@ -146,7 +148,7 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS :=
+LDFLAGS := -fuse-ld=lld
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
@@ -173,6 +175,11 @@ ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
+endif
+
+ifdef USE_LTO
+CFLAGS += -flto
+FFLAGS += -flto
 endif
 
 ifdef NO_OVERRIDE_LIMITS
