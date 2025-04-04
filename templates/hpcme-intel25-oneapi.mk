@@ -36,6 +36,8 @@ TEST  =              # If non-blank, use the compiler options defined in
 VERBOSE =            # If non-blank, add additional verbosity compiler
                      # options
 
+USE_LTO =            # Enable link-time optimization
+
 OPENMP =             # If non-blank, compile with openmp enabled
 
 NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
@@ -59,8 +61,6 @@ ISA =
 COVERAGE =           # Add the code coverage compile options.
 
 USE_R4 =             # If non-blank, use R4 for reals
-
-USE_LTO =            # Enable link-time optimization
 
 # Need to use at least GNU Make version 3.81
 need := 3.81
@@ -121,6 +121,7 @@ FFLAGS_REPRO = -O2 -debug minimal -fp-model source $(ISA_REPRO)
 FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -check nouninit -warn -warn noerrors -fpe0 -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
+FFLAGS_LTO = -flto
 FFLAGS_OPENMP = -qopenmp
 FFLAGS_OVERRIDE_LIMITS = -qoverride-limits
 FFLAGS_VERBOSE = -v -V -what -warn all -qopt-report-phase=vec -qopt-report=2
@@ -140,6 +141,7 @@ CFLAGS_REPRO = -O2 -debug minimal $(ISA_REPRO)
 CFLAGS_DEBUG = -O0 -g $(ISA_DEBUG)
 
 # Flags to add additional build options
+CFLAGS_LTO = -flto
 CFLAGS_OPENMP = -qopenmp
 CFLAGS_VERBOSE = -w3 -qopt-report-phase=vec -qopt-report=2
 CFLAGS_COVERAGE = -prof-gen=srcpos
@@ -173,15 +175,16 @@ CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
 endif
 
+ifdef USE_LTO
+CFLAGS += $(CFLAGS_LTO)
+FFLAGS += $(FFLAGS_LTO)
+LDFLAGS += $(FFLAGS)
+endif
+
 ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
-endif
-
-ifdef USE_LTO
-CFLAGS += -flto
-FFLAGS += -flto
 endif
 
 ifdef NO_OVERRIDE_LIMITS
