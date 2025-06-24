@@ -6,9 +6,9 @@
 ############
 # Commands Macros
 ############
-FC = ftn
-CC = cc
-LD = ftn
+FC = mpiifx
+CC = mpiicx
+LD = mpiifx
 
 #######################
 # Build target macros
@@ -44,13 +44,15 @@ NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
                      # compiler option.  Default behavior is to compile
                      # with -qoverride-limits.
 
+STATIC =             # If non-blank do a static build
+
 NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
 
                      # A list of -I Include directories to be added to the
                      # the compile command.
-INCLUDES := $(shell pkg-config --cflags yaml-0.1)
+INCLUDES := $(shell pkg-config --cflags hdf5_fortran) $(shell nf-config --flibs) $(shell nc-config --cflags) $(shell nf-config --fflags) -I/opt/views/view/include
 
                      # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.
@@ -92,7 +94,7 @@ endif
 CPPDEFS += -Duse_netCDF
 
 # Additional Preprocessor Macros needed due to  Autotools and CMake
-CPPDEFS += -DHAVE_SCHED_GETAFFINITY -DHAVE_GETTID
+CPPDEFS += -DHAVE_GETTID -DHAVE_SCHED_GETAFFINITY
 
 # Macro for Fortran preprocessor
 FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
@@ -156,7 +158,7 @@ LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := $(shell pkg-config --libs yaml-0.1)
+LIBS := -L/opt/views/view/lib -lyaml -lhdf5 -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran $(shell nf-config --flibs) $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
@@ -210,6 +212,10 @@ LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
 LDFLAGS += $(LIBS)
+
+ifdef STATIC
+  LDFLAGS += -static
+endif
 
 #---------------------------------------------------------------------------
 # you should never need to change any lines below.
