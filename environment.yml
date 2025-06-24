@@ -1,0 +1,7 @@
+name: mkmf
+channels:
+  - conda-forge
+dependencies:
+  - conda-forge::perl
+  - conda-forge::tcsh
+  - conda-forge::bats-core
