@@ -90,7 +90,7 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS = -s $(REAL_PRECISION) -s integer32 -h byteswapio -e m -h keepfiles -e0 -ez -N1023
+FFLAGS = -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib -s $(REAL_PRECISION) -s integer32 -h byteswapio -e m -h keepfiles -e0 -ez -N1023
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O3 -O fp2 -G2
@@ -108,7 +108,7 @@ CPPFLAGS := $(INCLUDES)
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS =
+CFLAGS = -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2

@@ -90,7 +90,7 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer $(REAL_PRECISION) -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check -fallow-argument-mismatch
+FFLAGS := -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib -fcray-pointer $(REAL_PRECISION) -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check -fallow-argument-mismatch
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O2 -fno-expensive-optimizations
@@ -108,7 +108,7 @@ CPPFLAGS := -D__IFC $(INCLUDES)
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS :=
+CFLAGS := -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
