@@ -100,7 +100,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -traceback
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -traceback
 
 # Set the ISA (vectorization) as user defined or based on the target
 ifdef ISA
@@ -131,7 +131,7 @@ CPPFLAGS := -D__IFC $(INCLUDES)
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS := -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib -sox -traceback
+CFLAGS := -sox -traceback
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2 -debug minimal $(ISA_OPT)
@@ -150,7 +150,7 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS := -fuse-ld=lld
+LDFLAGS := -fuse-ld=lld -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
