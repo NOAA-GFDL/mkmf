@@ -126,7 +126,7 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS := -h byteswapio
+LDFLAGS := -h byteswapio -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib
 LDFLAGS_NOOPENMP :=
 LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
