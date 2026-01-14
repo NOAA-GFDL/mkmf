@@ -152,7 +152,7 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS := -fuse-ld=lld
+LDFLAGS := 
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
