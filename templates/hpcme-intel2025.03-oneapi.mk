@@ -52,7 +52,7 @@ NETCDF =             # If value is '3' and CPPDEFS contains
 
                      # A list of -I Include directories to be added to the
                      # the compile command.
-INCLUDES := $(shell pkg-config --cflags hdf5_fortran) $(shell nf-config --flibs) $(shell nc-config --cflags) $(shell nf-config --fflags) -I/opt/views/view/include
+INCLUDES := $(shell pkg-config --cflags hdf5_fortran) $(shell nf-config --flibs) $(shell nc-config --cflags) $(shell nf-config --fflags) -I/opt/spack-environment/.spack-env/view/include
 
                      # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.
@@ -152,13 +152,14 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
+AR = /opt/intel/oneapi/compiler/latest/bin/compiler/llvm-ar
 LDFLAGS := -fuse-ld=lld
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := -L/opt/views/view/lib -lyaml -lhdf5 -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran $(shell nf-config --flibs) $(shell nc-config --libs)
+LIBS := -L/opt/spack-environment/.spack-env/view/lib -lyaml -lhdf5 -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran $(shell nf-config --flibs) $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
