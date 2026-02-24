@@ -147,7 +147,7 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS :=
+LDFLAGS := -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
