@@ -16,17 +16,14 @@ build:
 requirements:
   host:
     - conda-forge::perl
-    - conda-forge::tcsh
     - conda-forge::bats-core
   run:
     - conda-forge::perl
-    - conda-forge::tcsh
     - conda-forge::bats-core
 
 test:
   requires:
     - conda-forge::perl
-    - conda-forge::tcsh
     - conda-forge::bats-core
   source_files:
     - t/
