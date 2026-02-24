@@ -1,0 +1,42 @@
+package:
+  name: mkmf
+  version: '2025.01'
+#  version: '{{ environ.get("GIT_DESCRIBE_TAG", data.get("version")) }}'
+
+source:
+  path: .
+
+build:
+  script:
+    - cp mkmf/bin/mkmf $PREFIX/bin
+    - cp mkmf/bin/list_paths $PREFIX/bin
+    - cp mkmf/bin/git-version-string $PREFIX/bin
+
+
+requirements:
+  host:
+    - conda-forge::perl
+    - conda-forge::bats-core
+  run:
+    - conda-forge::perl
+    - conda-forge::bats-core
+
+test:
+  requires:
+    - conda-forge::perl
+    - conda-forge::bats-core
+  source_files:
+    - t/
+    - mkmf/
+  commands:
+    - which mkmf
+    - bats -j 1 -x --verbose-run t/t000-basic.sh
+    - bats -j 1 -x --verbose-run t/t001-list_paths.sh
+    - bats -j 1 -x --verbose-run t/t002-git-version-string.sh
+    - bats -j 1 -x --verbose-run t/t003-mkmf.sh
+    - bats -j 1 -x --verbose-run t/t004-templates.sh
+
+
+  
+about:
+  home: https://github.com/NOAA-GFDL/mkmf

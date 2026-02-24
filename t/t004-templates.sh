@@ -1,10 +1,20 @@
 #!/usr/bin/env bats
 
 setup() {
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
+   # set PATH if needed
+   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
+   do_we_have_mkmf=$(which mkmf) || echo "no we do not!"
+   if [ $do_we_have_mkmf ]; then
+	   echo 'likely conda case'
+   else
+	   export PATH=${binDir}:${PATH}
+   fi
+
+   # test templates directory
    templateDir=$(readlink -f ${BATS_TEST_DIRNAME}/../templates)
+
+   # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
-   export PATH=${binDir}:${PATH}
    cd ${testDir}
 }
 

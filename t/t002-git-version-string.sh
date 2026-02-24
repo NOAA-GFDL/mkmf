@@ -1,17 +1,28 @@
 #!/usr/bin/env bats
 
 setup() {
-   # Set the PATH
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
-   export PATH=${binDir}:${PATH}
+   # set PATH if needed
+   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
+   do_we_have_mkmf=$(which mkmf) || echo "no we do not!"
+   if [ $do_we_have_mkmf ]; then
+	   echo 'likely conda case'
+   else
+	   export PATH=${binDir}:${PATH}
+   fi
+
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
    cd ${testDir}
+
    # Setup the git repository with files with random strings
    git init .
    tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file1
-   git add .
-   git commit -m 'Temporary git repo for testing'
+   [ -e file1 ]
+   cat file1
+   git add ./file1
+   git config --local user.email "you@example.com"
+   git config --local user.name "Your Name"
+   git commit -o file1 -m 'Temporary git repo for testing- file1 filled with stuff'
 }
 
 teardown() {

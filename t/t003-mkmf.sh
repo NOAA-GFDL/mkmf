@@ -1,14 +1,31 @@
 #!/usr/bin/env bats
 
 setup() {
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
-   testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
-   export PATH=${binDir}:${PATH}
-   cd ${testDir}
+   # set PATH if needed
+   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
+   do_we_have_mkmf=$(which mkmf) || echo "no we do not!"
+   if [ $do_we_have_mkmf ]; then
+	   echo 'likely conda case'
+   else
+	   export PATH=${binDir}:${PATH}
+   fi
+
+   # for tests/cases that depend on a symbolic link to cover
+   cd ${BATS_TEST_DIRNAME}/src \
+	   && ln -s file6.linked file6.f90
+   cd -
+
+   # test template file
    mkmf_test_template="${BATS_TEST_DIRNAME}/templates/test_gnu.mk"
+   
+   # Temporary directory where tests are run   
+   testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
+   cd ${testDir}
+   
 }
 
 teardown() {
+   rm -f ${BATS_TEST_DIRNAME}/src/file6.f90
    rm -rf ${testDir}
 }
 
