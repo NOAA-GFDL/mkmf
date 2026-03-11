@@ -22,10 +22,8 @@ build:
 requirements:
   host:
     - conda-forge::perl
-    - conda-forge::bats-core
   run:
     - conda-forge::perl
-    - conda-forge::bats-core
 
 test:
   requires:
