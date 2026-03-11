@@ -11,6 +11,12 @@ build:
     - cp mkmf/bin/mkmf $PREFIX/bin
     - cp mkmf/bin/list_paths $PREFIX/bin
     - cp mkmf/bin/git-version-string $PREFIX/bin
+    # Install templates to the standard data-files location so downstream
+    # tools (e.g. fre-cli) can reference them via a stable, predictable path.
+    # Users can point mkmf at a specific template with:
+    #   mkmf -t $CONDA_PREFIX/share/mkmf/templates/<name>.mk
+    - mkdir -p $PREFIX/share/mkmf/templates
+    - cp -r templates/* $PREFIX/share/mkmf/templates/
 
 
 requirements:
