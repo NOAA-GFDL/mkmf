@@ -1,13 +1,16 @@
 #!/usr/bin/env bats
 
 setup() {
-   # set PATH if needed
+   # Determine where the mkmf binaries are.
+   # When mkmf is conda-installed it is already on PATH and that installed
+   # copy is the one under test.  When developing locally without a conda
+   # install, prepend the repo's bin/ dir so the tests exercise the local
+   # working copy instead of any system copy.
    binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
-   do_we_have_mkmf=$(which mkmf) || echo "no we do not!"
-   if [ $do_we_have_mkmf ]; then
-	   echo 'likely conda case'
+   if [ $(command -v mkmf) ]; then
+      echo "mkmf found in PATH (conda install); using that copy for tests."
    else
-	   export PATH=${binDir}:${PATH}
+      export PATH=${binDir}:${PATH}
    fi
 
    # Temporary directory where tests are run
