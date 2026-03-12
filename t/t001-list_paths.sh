@@ -1,17 +1,19 @@
 #!/usr/bin/env bats
 
 setup() {
-   # Determine where the mkmf binaries are.
-   # When mkmf is conda-installed it is already on PATH and that installed
-   # copy is the one under test.  When developing locally without a conda
-   # install, prepend the repo's bin/ dir so the tests exercise the local
-   # working copy instead of any system copy.
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../mkmf/bin)
-   if [ $(command -v mkmf) ]; then
-      echo "mkmf found in PATH (conda install); using that copy for tests."
+   # Always prepend the correct bin directory to PATH so we test the intended
+   # copy of mkmf — never an unrelated one that happens to be on the user's
+   # PATH already (which would hide failures, as underwoo noted in review).
+   #
+   # During "conda build" testing, $PREFIX points to the environment where
+   # the just-built package was installed; we test those installed binaries.
+   # In local development we use the repo's own mkmf/bin/ directory.
+   if [[ -n "${PREFIX:-}" && -x "${PREFIX}/bin/mkmf" ]]; then
+      binDir="${PREFIX}/bin"
    else
-      export PATH=${binDir}:${PATH}
+      binDir=$(readlink -f "${BATS_TEST_DIRNAME}/../mkmf/bin")
    fi
+   export PATH="${binDir}:${PATH}"
 
    # Create an isolated temporary directory and populate it with a copy of
    # t/src/.  The symlink file6.f90 -> file6.linked is created here rather
