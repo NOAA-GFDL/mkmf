@@ -1,19 +1,18 @@
 #!/usr/bin/env bats
 
 setup() {
-   # Always prepend the correct bin directory to PATH so we test the intended
-   # copy of mkmf — never an unrelated one that happens to be on the user's
-   # PATH already (which would hide failures, as underwoo noted in review).
-   #
-   # During "conda build" testing, $PREFIX points to the environment where
-   # the just-built package was installed; we test those installed binaries.
-   # In local development we use the repo's own mkmf/bin/ directory.
+   # During conda build/test, $PREFIX points to the just-installed package.
    if [[ -n "${PREFIX:-}" && -x "${PREFIX}/bin/mkmf" ]]; then
-      binDir="${PREFIX}/bin"
-   else
-      binDir=$(readlink -f "${BATS_TEST_DIRNAME}/../mkmf/bin")
+      export PATH="${PREFIX}/bin:${PATH}"
    fi
-   export PATH="${binDir}:${PATH}"
+
+   # Fail immediately if mkmf is not on PATH — don't silently fall back.
+   if ! command -v mkmf >/dev/null 2>&1; then
+      echo "ERROR: mkmf not found on PATH." >&2
+      echo "If testing locally, add the repo bin directory first:" >&2
+      echo "  export PATH=\"\$(readlink -f mkmf/bin):\$PATH\"" >&2
+      return 1
+   fi
 
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
