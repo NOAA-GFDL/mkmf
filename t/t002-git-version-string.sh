@@ -18,9 +18,11 @@ setup() {
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
    cd ${testDir}
 
-   # Setup the git repository with files with random strings
+   # Setup the git repository with files with random strings.
+   # Use dd with a bounded byte count — piping tr < /dev/urandom can hang
+   # when SIGPIPE delivery to tr is delayed (observed on GitHub Actions).
    git init .
-   tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file1
+   dd if=/dev/urandom bs=45 count=1 2>/dev/null | base64 | tr -d '/+\n' | head -c30 > file1
    [ -e file1 ]
    cat file1
    git add ./file1
@@ -41,7 +43,7 @@ teardown() {
 }
 
 @test "git-version-string has for untracked file" {
-   tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file2
+   dd if=/dev/urandom bs=45 count=1 2>/dev/null | base64 | tr -d '/+\n' | head -c30 > file2
    repoHash=$(git rev-parse HEAD)
    fileHash=$(git hash-object file2)
    run git-version-string file2
@@ -66,7 +68,7 @@ teardown() {
 }
 
 @test "git-version-string added file" {
-   tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file2
+   dd if=/dev/urandom bs=45 count=1 2>/dev/null | base64 | tr -d '/+\n' | head -c30 > file2
    git add .
    repoHash=$(git rev-parse HEAD)
    fileHash=$(git hash-object file2)
