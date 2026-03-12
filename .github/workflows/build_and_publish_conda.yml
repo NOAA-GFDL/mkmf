@@ -1,0 +1,38 @@
+name: build_and_publish_conda
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/noaa-gfdl/fre-cli:miniconda24.7.1_gcc14.2.0
+    steps:
+      - name: Checkout Files
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Run Conda to Build
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          # append the reqd channels
+          conda config --append channels conda-forge
+          conda config --append channels noaa-gfdl
+
+          # install conda-build and conda-verify
+          conda install conda-build conda-verify
+
+          # publish to anaconda.org when pushing to main
+          if [ "${{ github.event_name }}" = "push" ] && [ -n "${ANACONDA_TOKEN}" ]; then
+            export ANACONDA_API_TOKEN="${ANACONDA_TOKEN}"
+            conda config --set anaconda_upload yes
+          fi
+
+          # conda build
+          conda build .

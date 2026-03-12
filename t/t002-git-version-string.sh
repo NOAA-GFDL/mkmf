@@ -1,17 +1,34 @@
 #!/usr/bin/env bats
 
 setup() {
-   # Set the PATH
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
-   export PATH=${binDir}:${PATH}
+   # During conda build/test, $PREFIX points to the just-installed package.
+   if [[ -n "${PREFIX:-}" && -x "${PREFIX}/bin/mkmf" ]]; then
+      export PATH="${PREFIX}/bin:${PATH}"
+   fi
+
+   # Fail immediately if mkmf is not on PATH — don't silently fall back.
+   if ! command -v mkmf >/dev/null 2>&1; then
+      echo "ERROR: mkmf not found on PATH." >&2
+      echo "If testing locally, add the repo bin directory first:" >&2
+      echo "  export PATH=\"\$(readlink -f mkmf/bin):\$PATH\"" >&2
+      return 1
+   fi
+
    # Temporary directory where tests are run
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
    cd ${testDir}
-   # Setup the git repository with files with random strings
+
+   # Setup the git repository with files with random strings.
+   # Use dd with a bounded byte count — piping tr < /dev/urandom can hang
+   # when SIGPIPE delivery to tr is delayed (observed on GitHub Actions).
    git init .
-   tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file1
-   git add .
-   git commit -m 'Temporary git repo for testing'
+   dd if=/dev/urandom bs=45 count=1 2>/dev/null | base64 | tr -d '/+\n' | head -c30 > file1
+   [ -e file1 ]
+   cat file1
+   git add ./file1
+   git config --local user.email "you@example.com"
+   git config --local user.name "Your Name"
+   git commit -o file1 -m 'Temporary git repo for testing- file1 filled with stuff'
 }
 
 teardown() {
@@ -26,7 +43,7 @@ teardown() {
 }
 
 @test "git-version-string has for untracked file" {
-   tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file2
+   dd if=/dev/urandom bs=45 count=1 2>/dev/null | base64 | tr -d '/+\n' | head -c30 > file2
    repoHash=$(git rev-parse HEAD)
    fileHash=$(git hash-object file2)
    run git-version-string file2
@@ -51,7 +68,7 @@ teardown() {
 }
 
 @test "git-version-string added file" {
-   tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1 > file2
+   dd if=/dev/urandom bs=45 count=1 2>/dev/null | base64 | tr -d '/+\n' | head -c30 > file2
    git add .
    repoHash=$(git rev-parse HEAD)
    fileHash=$(git hash-object file2)
