@@ -1,13 +1,15 @@
-# Template for the GNU Compiler Collection on Linux systems
+# Template for the NVHPC set of compilers (formerly pgi) on a standard linux OS. 
+# This was tested on rhel 8, but should work for most distributions with minor modifications. 
 #
 # Typical use with mkmf
-# mkmf -t linux-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 
 ############
-# Commands Macors
-FC = mpifort
+# Commands Macros
+############
+FC = mpifort 
 CC = mpicc
-LD = mpifort
+LD = mpifort 
 
 #######################
 # Build target macros
@@ -37,10 +39,6 @@ VERBOSE =            # If non-blank, add additional verbosity compiler
 
 OPENMP =             # If non-blank, compile with openmp enabled
 
-NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
-                     # compiler option.  Default behavior is to compile
-                     # with -qoverride-limits.
-
 NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
@@ -48,10 +46,6 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # A list of -I Include directories to be added to the
                      # the compile command.
 INCLUDES := $(shell pkg-config --cflags yaml-0.1)
-
-SSE =                # The SSE options to be used to compile.  If blank,
-                     # than use the default SSE settings for the host.
-                     # Current default is to use SSE2.
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -79,10 +73,10 @@ endif
 endif
 
 ifdef USE_R4
-REAL_PRECISION := -fdefault-real-4
+REAL_PRECISION := -r4
 CPPDEFS += -DOVERLOAD_R4
 else
-REAL_PRECISION := -fdefault-real-8
+REAL_PRECISION := -r8
 endif
 
 # Required Preprocessor Macros:
@@ -97,35 +91,36 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-double-8 $(REAL_PRECISION) -Waliasing -ffree-line-length-none -fno-range-check
+FFLAGS = -i4 $(REAL_PRECISION) -byteswapio -Mflushz -Mdaz -D_F2000
 
-# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_OPT = -O3
-FFLAGS_REPRO = -O2 -fbounds-check
-FFLAGS_DEBUG = -O0 -g -W -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow
+# Flags based on performance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
+# -fno-associative-math and -ffp-contract=off are specific to the new-gen compiler, and were
+# recommended by nvidia for the most reproducibility with past versions.
+FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
+FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse -fno-associative-math -ffp-contract=off
+FFLAGS_DEBUG = -O0 -g -Ktrap=fp
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -fopenmp
-FFLAGS_VERBOSE =
+FFLAGS_OPENMP = -mp
+FFLAGS_VERBOSE = -v -Minform=inform
 FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
-# -DHAVE_GETTID flag requirement is OS-dependent, and may need to be added below
 CPPFLAGS := $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS := -D__IFC
+CFLAGS =
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
 CFLAGS_REPRO = -O2
-CFLAGS_DEBUG = -O0 -g
+CFLAGS_DEBUG = -O0 -g -Ktrap=fp
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -fopenmp
-CFLAGS_VERBOSE =
+CFLAGS_OPENMP = -mp
+CFLAGS_VERBOSE = -v -Minform=inform
 CFLAGS_COVERAGE =
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
@@ -134,15 +129,13 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS :=
-LDFLAGS_OPENMP := -fopenmp
-LDFLAGS_VERBOSE :=
+LDFLAGS := -byteswapio
+LDFLAGS_OPENMP :=
+LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
-# Start with a blank LIBS
-LIBS =
-# NetCDF library flags
-LIBS += $(shell nf-config --flibs)
+# List of -L library directories to be added to the compile and linking commands
+LIBS := $(shell pkg-config --libs yaml-0.1) $(shell nf-config --flibs) $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
@@ -163,15 +156,6 @@ ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
 FFLAGS += $(FFLAGS_OPENMP)
 LDFLAGS += $(LDFLAGS_OPENMP)
-endif
-
-ifdef SSE
-CFLAGS += $(SSE)
-FFLAGS += $(SSE)
-endif
-
-ifdef NO_OVERRIDE_LIMITS
-FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
 endif
 
 ifdef VERBOSE
@@ -196,6 +180,8 @@ FFLAGS += $(FFLAGS_COVERAGE) $(PROF_DIR)
 LDFLAGS += $(LDFLAGS_COVERAGE) $(PROF_DIR)
 endif
 
+# These Algebra libraries Add solution to more complex vector matrix model equations
+LIBS += -llapack -lblas
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
@@ -207,13 +193,13 @@ LDFLAGS += $(LIBS)
 # .f, .f90, .F, .F90. Given a sourcefile <file>.<ext>, where <ext> is one of
 # the above, this provides a number of default actions:
 
-# make <file>.opt	create an optimization report
-# make <file>.o		create an object file
-# make <file>.s		create an assembly listing
-# make <file>.x		create an executable file, assuming standalone
-#			source
-# make <file>.i		create a preprocessed file (for .F)
-# make <file>.i90	create a preprocessed file (for .F90)
+# make <file>.opt       create an optimization report
+# make <file>.o         create an object file
+# make <file>.s         create an assembly listing
+# make <file>.x         create an executable file, assuming standalone
+#                       source
+# make <file>.i         create a preprocessed file (for .F)
+# make <file>.i90       create a preprocessed file (for .F90)
 
 # The macro TMPFILES is provided to slate files like the above for removal.
 
