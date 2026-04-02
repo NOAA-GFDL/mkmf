@@ -1,0 +1,25 @@
+name: test
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q perl bats
+
+      - name: Run tests
+        run: |
+          export PATH="$(readlink -f mkmf/bin):$PATH"
+          bats t/t000-basic.sh
+          bats t/t001-list_paths.sh
+          bats t/t002-git-version-string.sh
+          bats t/t003-mkmf.sh
+          bats t/t004-templates.sh

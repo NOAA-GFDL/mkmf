@@ -1,14 +1,35 @@
 #!/usr/bin/env bats
 
 setup() {
-   binDir=$(readlink -f ${BATS_TEST_DIRNAME}/../bin)
+   # During conda build/test, $PREFIX points to the just-installed package.
+   if [[ -n "${PREFIX:-}" && -x "${PREFIX}/bin/mkmf" ]]; then
+      export PATH="${PREFIX}/bin:${PATH}"
+   fi
+
+   # Fail immediately if mkmf is not on PATH — don't silently fall back.
+   if ! command -v mkmf >/dev/null 2>&1; then
+      echo "ERROR: mkmf not found on PATH." >&2
+      echo "If testing locally, add the repo bin directory first:" >&2
+      echo "  export PATH=\"\$(readlink -f mkmf/bin):\$PATH\"" >&2
+      return 1
+   fi
+
+   # Create an isolated temporary directory and populate it with a copy of
+   # t/src/.  The symlink file6.f90 -> file6.linked is created here rather
+   # than inside the real source tree so that teardown cleans everything up
+   # automatically and a killed/failed test never leaves a stale symlink.
    testDir=$(mktemp -d ${BATS_TEST_DIRNAME}/${BATS_TEST_NAME}.XXXXXXXX)
-   export PATH=${binDir}:${PATH}
-   cd ${testDir}
+   cp -r ${BATS_TEST_DIRNAME}/src ${testDir}/src
+   ln -s file6.linked ${testDir}/src/file6.f90
+
+   # test template file
    mkmf_test_template="${BATS_TEST_DIRNAME}/templates/test_gnu.mk"
+
+   cd ${testDir}
 }
 
 teardown() {
+   # testDir contains the src copy and symlink — no separate file removal needed.
    rm -rf ${testDir}
 }
 
@@ -82,16 +103,16 @@ teardown() {
 }
 
 @test "mkmf finds sources in directory" {
-   run mkmf ${BATS_TEST_DIRNAME}/src
+   run mkmf ${testDir}/src
    [ "$status" -eq 0 ]
    [ -e Makefile ]
-   regexString="^\./file4\.c: ${BATS_TEST_DIRNAME}/src/file4\.c$"
+   regexString="^\./file4\.c: ${testDir}/src/file4\.c$"
    run grep -q "${regexString}" Makefile
    [ "$status" -eq 0 ]
 }
 
 @test "mkmf use srcdir in Makefile" {
-   run mkmf -a ${BATS_TEST_DIRNAME}/src ${BATS_TEST_DIRNAME}/src
+   run mkmf -a ${testDir}/src ${testDir}/src
    [ "$status" -eq 0 ]
    [ -e Makefile ]
    regexString='^\./file3\.f: \$(SRCROOT)\./file3.f$'
@@ -118,7 +139,7 @@ teardown() {
 }
 
 @test "mkmf accepts -I<INCLUDE> directories" {
-   run mkmf -I${BATS_TEST_DIRNAME}/src
+   run mkmf -I${testDir}/src
    [ "$status" -eq 0 ]
    [ -e Makefile ]
 }
@@ -138,8 +159,8 @@ program test
   write (*,*) "Hello world."
 end program test
 EOF
-   run mkmf -I${BATS_TEST_DIRNAME}/src
-   regexString="^\./file4\.inc: ${BATS_TEST_DIRNAME}/src/file4\.inc\$"
+   run mkmf -I${testDir}/src
+   regexString="^\./file4\.inc: ${testDir}/src/file4\.inc\$"
    run grep -q "${regexString}" Makefile
    [ "$status" -eq 0 ]
 }
@@ -168,7 +189,7 @@ EOF
 }
 
 @test "mkmf builds executable" {
-   run mkmf -t ${mkmf_test_template} -c "-DSYMLINKS" ${BATS_TEST_DIRNAME}/src
+   run mkmf -t ${mkmf_test_template} -c "-DSYMLINKS" ${testDir}/src
    [ "$status" -eq 0 ]
    [ -e Makefile ]
    run make
@@ -180,7 +201,7 @@ EOF
 }
 
 @test "mkmf builds executable with -x option" {
-   run mkmf -x -t ${mkmf_test_template} -c "-DSYMLINKS" ${BATS_TEST_DIRNAME}/src
+   run mkmf -x -t ${mkmf_test_template} -c "-DSYMLINKS" ${testDir}/src
    [ "$status" -eq 0 ]
    [ -e Makefile ]
    [ -e a.out ]
@@ -190,7 +211,7 @@ EOF
 }
 
 @test "mkmf will call cpp on \*.F \*.F90 files" {
-   run mkmf --use-cpp -x -t ${mkmf_test_template} -c "-DSYMLINKS" ${BATS_TEST_DIRNAME}/src
+   run mkmf --use-cpp -x -t ${mkmf_test_template} -c "-DSYMLINKS" ${testDir}/src
    ls
    [ "$status" -eq 0 ]
    [ -e Makefile ]
@@ -202,7 +223,7 @@ EOF
 }
    
 @test "mkmf will use files from path_names file" {
-   run list_paths ${BATS_TEST_DIRNAME}/src
+   run list_paths ${testDir}/src
    [ "$status" -eq 0 ]
    [ -e path_names ]
    mkmf -x -t ${mkmf_test_template} path_names
