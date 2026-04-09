@@ -96,8 +96,8 @@ FFLAGS = -i4 $(REAL_PRECISION) -byteswapio -Mflushz -Mdaz -D_F2000
 # Flags based on performance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 # -fno-associative-math and -ffp-contract=off are specific to the new-gen compiler, and were
 # recommended by nvidia for the most reproducibility with past versions.
-FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
-FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse -fno-associative-math -ffp-contract=off
+FFLAGS_OPT = -O3 -Mallocatable=95 -ffp-contract=off
+FFLAGS_REPRO = -O2 -fno-associative-math -ffp-contract=off
 FFLAGS_DEBUG = -O0 -g -Ktrap=fp
 
 # Flags to add additional build options
