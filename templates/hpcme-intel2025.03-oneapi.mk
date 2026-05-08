@@ -153,7 +153,7 @@ CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
 AR = /opt/intel/oneapi/compiler/latest/bin/compiler/llvm-ar
-LDFLAGS := -fuse-ld=lld
+LDFLAGS :=
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
