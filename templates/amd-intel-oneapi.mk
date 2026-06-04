@@ -48,7 +48,7 @@ NETCDF =             # If value is '3' and CPPDEFS contains
 
                      # A list of -I Include directories to be added to the
                      # the compile command.
-INCLUDES := $(shell pkg-config --cflags yaml-0.1) -I/opt/hdf5/1.14.4-3/ONEAPI/2024.2/include $(shell nf-config --fflags)
+INCLUDES := $(shell pkg-config --cflags yaml-0.1) $(shell nc-config --cflags) $(shell nf-config --fflags)
 
                      # The Intel Instruction Set Archetecture (ISA) compile
                      # option to use.
