@@ -152,7 +152,7 @@ LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := $(shell pkg-config --libs yaml-0.1) -L/opt/hdf5/1.14.4-3/ONEAPI/2024.2/lib -lhdf5 -lhdf5_fortran $(shell nf-config --flibs)
+LIBS := $(shell pkg-config --libs yaml-0.1) $(shell nc-config --libs) $(shell nf-config --flibs)
 
 # Get compile flags based on target macros.
 ifdef REPRO
