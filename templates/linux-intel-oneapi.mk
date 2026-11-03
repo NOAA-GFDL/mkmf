@@ -12,8 +12,8 @@ ifdef PE_ENV
 MPIFC ?= ftn
 MPICC ?= cc
 else
-MPIFC ?= mpifort
-MPICC ?= mpicc
+MPIFC ?= mpif90 -fc=-ifx
+MPICC ?= mpicc -cc=icx
 endif
 FC = $(MPIFC)
 CC = $(MPICC)
