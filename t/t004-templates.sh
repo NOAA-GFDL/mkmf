@@ -56,22 +56,6 @@ helper() {
    helper nccs-intel.mk
 }
 
-@test "template ncrc-cray.mk" {
-   helper ncrc-cray.mk
-}
-
-@test "template ncrc-gnu.mk" {
-   helper ncrc-gnu.mk
-}
-
-@test "template ncrc-intel.mk" {
-   helper ncrc-intel.mk
-}
-
-@test "template ncrc-pgi.mk" {
-   helper ncrc-pgi.mk
-}
-
 @test "template osx-gnu.mk" {
    helper osx-gnu.mk
 }
@@ -82,4 +66,8 @@ helper() {
 
 @test "template triton-gnu.mk" {
    helper triton-gnu.mk
+}
+
+@test "template linux-nvhpc-beta.mk" {
+   helper linux-nvhpc-beta.mk
 }
