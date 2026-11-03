@@ -1,4 +1,5 @@
-# Template for the PGI Compilers on a Cray System
+# Template for the beta NVHPC set of compilers (formerly pgi) on a standard linux OS. 
+# This was tested on rhel 8, but should work for most distributions with minor modifications. 
 #
 # Typical use with mkmf
 # mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
@@ -6,9 +7,9 @@
 ############
 # Commands Macros
 ############
-FC = ftn
-CC = cc
-LD = ftn $(MAIN_PROGRAM)
+FC = mpifort 
+CC = mpicc
+LD = mpifort 
 
 #######################
 # Build target macros
@@ -78,19 +79,11 @@ else
 REAL_PRECISION := -r8
 endif
 
-# Check version of PGI for use of -nofma option
-has_nofma := $(shell $(FC) -dryrun -nofma foo.f90 > /dev/null 2>&1; echo $$?)
-ifneq ($(has_nofma),0)
-NOFMA :=
-else
-NOFMA := -nofma
-endif
-
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
 # Additional Preprocessor Macros needed due to  Autotools and CMake
-CPPDEFS += -DHAVE_SCHED_GETAFFINITY -DHAVE_GETTID
+CPPDEFS += -DHAVE_SCHED_GETAFFINITY
 
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
@@ -98,12 +91,14 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS = -i4 $(REAL_PRECISION) -byteswapio -Mcray=pointer -Mcray=pointer -Mflushz -Mdaz -D_F2000
+FFLAGS = -i4 $(REAL_PRECISION) -byteswapio -Mflushz -Mdaz -D_F2000
 
-# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
-FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse $(NOFMA)
-FFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
+# Flags based on performance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
+# -fno-associative-math and -ffp-contract=off are specific to the new-gen compiler, and were
+# recommended by nvidia for the most reproducibility with past versions.
+FFLAGS_OPT = -O3 -Mallocatable=95 -ffp-contract=off
+FFLAGS_REPRO = -O2 -fno-associative-math -ffp-contract=off
+FFLAGS_DEBUG = -O0 -g -Ktrap=fp
 
 # Flags to add additional build options
 FFLAGS_OPENMP = -mp
@@ -121,7 +116,7 @@ CFLAGS =
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
 CFLAGS_REPRO = -O2
-CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
+CFLAGS_DEBUG = -O0 -g -Ktrap=fp
 
 # Flags to add additional build options
 CFLAGS_OPENMP = -mp
@@ -140,7 +135,7 @@ LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := $(shell pkg-config --libs yaml-0.1)
+LIBS := $(shell pkg-config --libs yaml-0.1) $(shell nf-config --flibs) $(shell nc-config --libs)
 
 # Get compile flags based on target macros.
 ifdef REPRO

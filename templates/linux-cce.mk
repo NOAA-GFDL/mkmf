@@ -1,13 +1,23 @@
-# Template for the GNU Compiler Collection on Linux systems
+# Template for the Cray Compiling Environment (CCE) on Linux, with or without the Cray PE
 #
 # Typical use with mkmf
-# mkmf -t linux-gnu.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t linux-cce.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 
 ############
-# Commands Macors
-FC = mpifort
-CC = mpicc
-LD = mpifort
+# Commands Macros
+############
+# Use the Cray PE compiler wrappers when a PrgEnv is loaded, otherwise use
+# the MPI compiler wrappers.  Override with MPIFC and MPICC in the environment.
+ifdef PE_ENV
+MPIFC ?= ftn
+MPICC ?= cc
+else
+MPIFC ?= mpifort
+MPICC ?= mpicc
+endif
+FC = $(MPIFC)
+CC = $(MPICC)
+LD = $(MPIFC) $(MAIN_PROGRAM)
 
 #######################
 # Build target macros
@@ -37,10 +47,6 @@ VERBOSE =            # If non-blank, add additional verbosity compiler
 
 OPENMP =             # If non-blank, compile with openmp enabled
 
-NO_OVERRIDE_LIMITS = # If non-blank, do not use the -qoverride-limits
-                     # compiler option.  Default behavior is to compile
-                     # with -qoverride-limits.
-
 NETCDF =             # If value is '3' and CPPDEFS contains
                      # '-Duse_netCDF', then the additional cpp macro
                      # '-Duse_LARGEFILE' is added to the CPPDEFS macro.
@@ -48,10 +54,6 @@ NETCDF =             # If value is '3' and CPPDEFS contains
                      # A list of -I Include directories to be added to the
                      # the compile command.
 INCLUDES := $(shell pkg-config --cflags yaml-0.1)
-
-SSE =                # The SSE options to be used to compile.  If blank,
-                     # than use the default SSE settings for the host.
-                     # Current default is to use SSE2.
 
 COVERAGE =           # Add the code coverage compile options.
 
@@ -79,17 +81,17 @@ endif
 endif
 
 ifdef USE_R4
-REAL_PRECISION := -fdefault-real-4
+REAL_PRECISION := real32
 CPPDEFS += -DOVERLOAD_R4
 else
-REAL_PRECISION := -fdefault-real-8
+REAL_PRECISION := real64
 endif
 
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
 # Additional Preprocessor Macros needed due to  Autotools and CMake
-CPPDEFS += -DHAVE_SCHED_GETAFFINITY
+CPPDEFS += -DHAVE_SCHED_GETAFFINITY -DHAVE_GETTID
 
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
@@ -97,35 +99,34 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-double-8 $(REAL_PRECISION) -Waliasing -ffree-line-length-none -fno-range-check
+FFLAGS = -s $(REAL_PRECISION) -s integer32 -h byteswapio -e m -h keepfiles -e0 -ez -N1023
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_OPT = -O3
-FFLAGS_REPRO = -O2 -fbounds-check
-FFLAGS_DEBUG = -O0 -g -W -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow
+FFLAGS_OPT = -O3 -O fp2 -g
+FFLAGS_REPRO = -O2 -O fp2 -g
+FFLAGS_DEBUG = -g -R bc
 
 # Flags to add additional build options
-FFLAGS_OPENMP = -fopenmp
-FFLAGS_VERBOSE =
+FFLAGS_NOOPENMP = -h noomp
+FFLAGS_VERBOSE = -e o -v
 FFLAGS_COVERAGE =
 
 # Macro for C preprocessor
-# -DHAVE_GETTID flag requirement is OS-dependent, and may need to be added below
 CPPFLAGS := $(INCLUDES)
 # C Compiler flags for the NetCDF library
 CPPFLAGS += $(shell nc-config --cflags)
 
 # Base set of C compiler flags
-CFLAGS := -D__IFC
+CFLAGS =
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
 CFLAGS_REPRO = -O2
-CFLAGS_DEBUG = -O0 -g
+CFLAGS_DEBUG = -g
 
 # Flags to add additional build options
-CFLAGS_OPENMP = -fopenmp
-CFLAGS_VERBOSE =
+CFLAGS_NOOPENMP = -h noomp
+CFLAGS_VERBOSE = -v -h display_opt
 CFLAGS_COVERAGE =
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
@@ -134,15 +135,19 @@ FFLAGS_TEST := $(FFLAGS_OPT)
 CFLAGS_TEST := $(CFLAGS_OPT)
 
 # Linking flags
-LDFLAGS :=
-LDFLAGS_OPENMP := -fopenmp
-LDFLAGS_VERBOSE :=
+LDFLAGS := -h byteswapio -Wl,-rpath,${NETCDF_DIR}/lib:${HDF5_DIR}/lib
+LDFLAGS_NOOPENMP :=
+LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
-# Start with a blank LIBS
-LIBS =
-# NetCDF library flags
-LIBS += $(shell nf-config --flibs)
+# List of -L library directories to be added to the compile and linking commands
+LIBS := $(shell pkg-config --libs yaml-0.1)
+ifndef PE_ENV
+# Outside the Cray PE, the compiler wrappers do not add the netCDF libraries
+LIBS += $(shell nc-config --libs)
+LIBS += $(shell nf-config --flibs | sed -e "s/-lnetcdf //g")
+LDFLAGS += -Wl,-rpath,$(shell nc-config --libdir):$(shell nf-config --prefix)/lib
+endif
 
 # Get compile flags based on target macros.
 ifdef REPRO
@@ -159,19 +164,10 @@ CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
 endif
 
-ifdef OPENMP
-CFLAGS += $(CFLAGS_OPENMP)
-FFLAGS += $(FFLAGS_OPENMP)
-LDFLAGS += $(LDFLAGS_OPENMP)
-endif
-
-ifdef SSE
-CFLAGS += $(SSE)
-FFLAGS += $(SSE)
-endif
-
-ifdef NO_OVERRIDE_LIMITS
-FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
+ifndef OPENMP
+CFLAGS += $(CFLAGS_NOOPENMP)
+FFLAGS += $(FFLAGS_NOOPENMP)
+LDFLAGS += $(LDFLAGS_NOOPENMP)
 endif
 
 ifdef VERBOSE
@@ -182,9 +178,7 @@ endif
 
 ifeq ($(NETCDF),3)
   # add the use_LARGEFILE cppdef
-  ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
-    CPPDEFS += -Duse_LARGEFILE
-  endif
+  CPPDEFS += -Duse_LARGEFILE
 endif
 
 ifdef COVERAGE

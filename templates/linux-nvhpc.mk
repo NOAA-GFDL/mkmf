@@ -1,15 +1,23 @@
-# Template for the NVHPC set of compilers (formerly pgi) on a standard linux OS. 
-# This was tested on rhel 8, but should work for most distributions with minor modifications. 
+# Template for the NVHPC Compilers (formerly PGI) on Linux, with or without the Cray PE
 #
 # Typical use with mkmf
-# mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t linux-nvhpc.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 
 ############
 # Commands Macros
 ############
-FC = mpifort 
-CC = mpicc
-LD = mpifort 
+# Use the Cray PE compiler wrappers when a PrgEnv is loaded, otherwise use
+# the MPI compiler wrappers.  Override with MPIFC and MPICC in the environment.
+ifdef PE_ENV
+MPIFC ?= ftn
+MPICC ?= cc
+else
+MPIFC ?= mpifort
+MPICC ?= mpicc
+endif
+FC = $(MPIFC)
+CC = $(MPICC)
+LD = $(MPIFC) $(MAIN_PROGRAM)
 
 #######################
 # Build target macros
@@ -79,11 +87,19 @@ else
 REAL_PRECISION := -r8
 endif
 
+# Check version of PGI for use of -nofma option
+has_nofma := $(shell $(FC) -dryrun -nofma foo.f90 > /dev/null 2>&1; echo $$?)
+ifneq ($(has_nofma),0)
+NOFMA :=
+else
+NOFMA := -nofma
+endif
+
 # Required Preprocessor Macros:
 CPPDEFS += -Duse_netCDF
 
 # Additional Preprocessor Macros needed due to  Autotools and CMake
-CPPDEFS += -DHAVE_SCHED_GETAFFINITY
+CPPDEFS += -DHAVE_SCHED_GETAFFINITY -DHAVE_GETTID
 
 # Macro for Fortran preprocessor
 FPPFLAGS := $(INCLUDES)
@@ -91,14 +107,12 @@ FPPFLAGS := $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS = -i4 $(REAL_PRECISION) -byteswapio -Mflushz -Mdaz -D_F2000
+FFLAGS = -i4 $(REAL_PRECISION) -byteswapio -Mcray=pointer -Mflushz -Mdaz -D_F2000
 
-# Flags based on performance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-# -fno-associative-math and -ffp-contract=off are specific to the new-gen compiler, and were
-# recommended by nvidia for the most reproducibility with past versions.
-FFLAGS_OPT = -O3 -Mallocatable=95 -ffp-contract=off
-FFLAGS_REPRO = -O2 -fno-associative-math -ffp-contract=off
-FFLAGS_DEBUG = -O0 -g -Ktrap=fp
+# Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
+FFLAGS_OPT = -O3 -Mvect=nosse -Mnoscalarsse
+FFLAGS_REPRO = -O2 -Mvect=nosse -Mnoscalarsse $(NOFMA)
+FFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
 
 # Flags to add additional build options
 FFLAGS_OPENMP = -mp
@@ -116,7 +130,7 @@ CFLAGS =
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2
 CFLAGS_REPRO = -O2
-CFLAGS_DEBUG = -O0 -g -Ktrap=fp
+CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
 
 # Flags to add additional build options
 CFLAGS_OPENMP = -mp
@@ -135,7 +149,13 @@ LDFLAGS_VERBOSE := -v
 LDFLAGS_COVERAGE :=
 
 # List of -L library directories to be added to the compile and linking commands
-LIBS := $(shell pkg-config --libs yaml-0.1) $(shell nf-config --flibs) $(shell nc-config --libs)
+LIBS := $(shell pkg-config --libs yaml-0.1)
+ifndef PE_ENV
+# Outside the Cray PE, the compiler wrappers do not add the netCDF libraries
+LIBS += $(shell nc-config --libs)
+LIBS += $(shell nf-config --flibs | sed -e "s/-lnetcdf //g")
+LDFLAGS += -Wl,-rpath,$(shell nc-config --libdir):$(shell nf-config --prefix)/lib
+endif
 
 # Get compile flags based on target macros.
 ifdef REPRO

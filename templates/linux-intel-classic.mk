@@ -1,14 +1,23 @@
-# Template for the Intel Compilers on a Cray System
+# Template for the Intel Classic Compilers on Linux, with or without the Cray PE
 #
 # Typical use with mkmf
-# mkmf -t ncrc-cray.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+# mkmf -t linux-intel-classic.mk -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 
 ############
 # Commands Macros
 ############
-FC = ftn
-CC = cc
-LD = ftn
+# Use the Cray PE compiler wrappers when a PrgEnv is loaded, otherwise use
+# the MPI compiler wrappers.  Override with MPIFC and MPICC in the environment.
+ifdef PE_ENV
+MPIFC ?= ftn
+MPICC ?= cc
+else
+MPIFC ?= mpif90 -fc=ifort
+MPICC ?= mpicc -cc=icc
+endif
+FC = $(MPIFC)
+CC = $(MPICC)
+LD = $(MPIFC)
 
 #######################
 # Build target macros
@@ -79,6 +88,7 @@ $(error Options DEBUG and TEST cannot be used together)
 endif
 endif
 
+
 ifdef USE_R4
 REAL_PRECISION := -real-size 32
 CPPDEFS += -DOVERLOAD_R4
@@ -98,7 +108,7 @@ FPPFLAGS := -fpp -Wp,-w $(INCLUDES)
 FPPFLAGS += $(shell nf-config --fflags)
 
 # Base set of Fortran compiler flags
-FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback -qno-opt-dynamic-align
+FFLAGS := -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 $(REAL_PRECISION) -nowarn -sox -traceback
 
 # Set the ISA (vectorization) as user defined or based on the target
 ifdef ISA
@@ -106,9 +116,9 @@ ISA_OPT = $(ISA)
 ISA_REPRO = $(ISA)
 ISA_DEBUG = $(ISA)
 else
-ISA_OPT = -march=core-avx-i
-ISA_REPRO = -march=core-avx-i
-ISA_DEBUG = -march=core-avx-i
+ISA_OPT = -march=core-avx-i -qno-opt-dynamic-align
+ISA_REPRO = -march=core-avx-i -qno-opt-dynamic-align
+ISA_DEBUG = -march=core-avx-i -qno-opt-dynamic-align
 endif
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
@@ -133,7 +143,7 @@ CFLAGS := -sox -traceback
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 CFLAGS_OPT = -O2 -debug minimal $(ISA_OPT)
 CFLAGS_REPRO = -O2 -debug minimal $(ISA_REPRO)
-CFLAGS_DEBUG = -O0 -g $(ISA_DEBUG)
+CFLAGS_DEBUG = -O0 -g -ftrapuv $(ISA_DEBUG)
 
 # Flags to add additional build options
 CFLAGS_OPENMP = -qopenmp
@@ -153,6 +163,16 @@ LDFLAGS_COVERAGE = -prof-gen=srcpos
 
 # List of -L library directories to be added to the compile and linking commands
 LIBS := $(shell pkg-config --libs yaml-0.1)
+ifndef PE_ENV
+# Outside the Cray PE, the compiler wrappers do not add the netCDF libraries
+LIBS += $(shell nc-config --libs)
+LIBS += $(shell nf-config --flibs | sed -e "s/-lnetcdf //g")
+LDFLAGS += -Wl,-rpath,$(shell nc-config --libdir):$(shell nf-config --prefix)/lib
+endif
+# Always use sequential MKL for LAPACK. Inside the Cray PE this also keeps ftn
+# from linking cray-libsci, whose OpenMP build (libsci_mp) crashes when LAPACK
+# is called from within OpenMP parallel regions (e.g. LM4 land_model).
+LIBS += -qmkl=sequential
 
 # Get compile flags based on target macros.
 ifdef REPRO
